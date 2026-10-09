@@ -95,6 +95,9 @@ namespace ProyectoDoly.Puentes
                 forma.SetName($"Eje {eje.Nombre}");
                 forma.get_Parameter(BuiltInParameter.ALL_MODEL_INSTANCE_COMMENTS)?.Set(Descripcion(eje, opciones));
 
+                //El tablero y las demas herramientas leen el eje desde aqui
+                DatosEje.Guardar(forma, eje, transformacion);
+
                 transaccion.Commit();
 
                 return new ResultadoEje
@@ -143,7 +146,7 @@ namespace ProyectoDoly.Puentes
             $"Eje | {eje.Nombre} | {Eje.FormatoEstacion(eje.EstacionInicial)} a {Eje.FormatoEstacion(eje.EstacionFinal)} | " +
             $"Rasante: {(eje.TieneRasante ? eje.Vertical.Nombre : "ninguna")} | {System.IO.Path.GetFileName(opciones.Archivo)}";
 
-        private static XYZ APies(Punto3 p) => new XYZ(
+        internal static XYZ APies(Punto3 p) => new XYZ(
             UnitUtils.ConvertToInternalUnits(p.X, UnitTypeId.Meters),
             UnitUtils.ConvertToInternalUnits(p.Y, UnitTypeId.Meters),
             UnitUtils.ConvertToInternalUnits(p.Z, UnitTypeId.Meters));

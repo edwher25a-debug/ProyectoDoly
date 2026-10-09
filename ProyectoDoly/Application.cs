@@ -1,4 +1,4 @@
-using System.Reflection;
+﻿using System.Reflection;
 using System.Windows.Media.Imaging;
 using Autodesk.Revit.UI;
 using ProyectoDoly.Commands;
@@ -65,6 +65,18 @@ namespace ProyectoDoly
             };
 
             panelPuentes.AddItem(importarEje);
+
+            var superestructura = new PushButtonData(nameof(SuperestructuraCmd), "Super-\nestructura",
+                Assembly.GetExecutingAssembly().Location, typeof(SuperestructuraCmd).FullName)
+            {
+                ToolTip = "Crea el tablero barriendo una sección transversal a lo largo del eje.",
+                LongDescription = "La sección sale de una familia de Revit (Modelo genérico o Perfil), por ejemplo las secciones de SOFiSTiK. " +
+                                  "Se elige el tipo, el tramo de estaciones y el paso; el tablero sigue la planta y la rasante del eje.",
+                LargeImage = new BitmapImage(new Uri("pack://application:,,,/ProyectoDoly;component/Resources/Icons/Superestructura32.png")),
+                Image = new BitmapImage(new Uri("pack://application:,,,/ProyectoDoly;component/Resources/Icons/Superestructura16.png"))
+            };
+
+            panelPuentes.AddItem(superestructura);
         }
     }
 }
