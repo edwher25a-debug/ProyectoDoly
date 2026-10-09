@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <!--Motor de calculo sin dependencias de Revit: se puede probar fuera de Revit-->
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <LangVersion>latest</LangVersion>
+        <Nullable>enable</Nullable>
+        <RootNamespace>Doly.Core</RootNamespace>
+    </PropertyGroup>
+
+</Project>

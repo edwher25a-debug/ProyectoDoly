@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LandXML xmlns="http://www.landxml.org/schema/LandXML-1.2" version="1.2">
+  <Units><Metric linearUnit="meter" areaUnit="squareMeter" volumeUnit="cubicMeter" angularUnit="decimal degrees" directionUnit="decimal degrees"/></Units>
+  <Alignments name="Prueba">
+    <Alignment name="Eje Puente" length="400.0" staStart="1000">
+      <CoordGeom>
+        <Line length="100"><Start>5000.00000000 1000.00000000</Start><End>5000.00000000 1100.00000000</End></Line>
+        <Spiral length="60.0" radiusStart="INF" radiusEnd="200.0" rot="ccw" spiType="clothoid"><Start>5000.00000000 1100.00000000</Start><PI>5000.00000000 1140.04724462</PI><End>5002.99518202 1159.86514055</End></Spiral>
+        <Curve rot="ccw" length="100.0" radius="200.0"><Start>5002.99518202 1159.86514055</Start><Center>5200.74939761 1129.97751406</Center><End>5041.53263790 1251.01479520</End></Curve>
+        <Spiral length="60.0" radiusStart="200.0" radiusEnd="INF" rot="ccw" spiType="clothoid"><Start>5041.53263790 1251.01479520</Start><PI>5053.66236284 1266.97066833</PI><End>5082.39049770 1294.87185235</End></Spiral>
+        <Line length="80"><Start>5082.39049770 1294.87185235</Start><End>5139.77898497 1350.60838910</End></Line>
+      </CoordGeom>
+      <Profile name="Perfiles">
+        <ProfSurf name="Terreno"><PntList2D>1000 100 1400 95</PntList2D></ProfSurf>
+        <ProfAlign name="Rasante Proyecto">
+          <PVI>1000 100</PVI>
+          <ParaCurve length="100">1150 103</ParaCurve>
+          <ParaCurve length="80">1300 100</ParaCurve>
+          <PVI>1400 101</PVI>
+        </ProfAlign>
+      </Profile>
+    </Alignment>
+  </Alignments>
+</LandXML>

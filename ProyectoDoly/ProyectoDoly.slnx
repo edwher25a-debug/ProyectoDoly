@@ -1,0 +1,9 @@
+<Solution>
+  <Configurations>
+    <BuildType Name="Debug R24" />
+    <BuildType Name="Release R24" />
+  </Configurations>
+  <Project Path="ProyectoDoly.csproj" />
+  <Project Path="../Doly.Core/Doly.Core.csproj" />
+  <Project Path="../Doly.Core.Tests/Doly.Core.Tests.csproj" />
+</Solution>
