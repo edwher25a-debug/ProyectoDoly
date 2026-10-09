@@ -38,8 +38,8 @@ namespace ProyectoDoly.Puentes.Superestructura
 
         public double Area => Math.Abs(AreaConSigno);
 
-        public Contorno Antihorario() => AreaConSigno >= 0 ? this : new Contorno(Puntos.Reverse());
-        public Contorno Horario() => AreaConSigno <= 0 ? this : new Contorno(Puntos.Reverse());
+        public Contorno Antihorario() => AreaConSigno >= 0 ? this : new Contorno(Enumerable.Reverse(Puntos));
+        public Contorno Horario() => AreaConSigno <= 0 ? this : new Contorno(Enumerable.Reverse(Puntos));
 
         //Punto dentro del poligono (regla par-impar)
         public bool Contiene(Punto2 p)

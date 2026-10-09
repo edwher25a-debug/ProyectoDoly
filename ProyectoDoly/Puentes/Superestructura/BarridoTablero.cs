@@ -109,7 +109,7 @@ namespace ProyectoDoly.Puentes.Superestructura
 
                 //02_Tapas: al inicio la seccion mira hacia atras, al final hacia adelante
                 solido.Caras.Add(new Cara(anillos.Select(c => (IReadOnlyList<Punto3>)c[0]).ToList()));
-                solido.Caras.Add(new Cara(anillos.Select(c => (IReadOnlyList<Punto3>)c[c.Count - 1].Reverse().ToArray()).ToList()));
+                solido.Caras.Add(new Cara(anillos.Select(c => (IReadOnlyList<Punto3>)Enumerable.Reverse(c[c.Count - 1]).ToArray()).ToList()));
 
                 solidos.Add(solido);
             }
