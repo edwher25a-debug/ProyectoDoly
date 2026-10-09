@@ -10,6 +10,10 @@
     <SolidColorBrush x:Key="Borde" Color="#D5DDE3"/>
     <SolidColorBrush x:Key="Texto" Color="#1F2A33"/>
     <SolidColorBrush x:Key="TextoSuave" Color="#5B6B78"/>
+    <!--Puentes: el eje se resalta en naranja-->
+    <SolidColorBrush x:Key="Acento" Color="#F28C28"/>
+    <SolidColorBrush x:Key="AcentoSuave" Color="#FFF3E6"/>
+    <SolidColorBrush x:Key="Error" Color="#B3261E"/>
 
     <!--Textos-->
     <Style x:Key="Titulo" TargetType="TextBlock">
@@ -71,6 +75,19 @@
         <Setter Property="HorizontalGridLinesBrush" Value="{StaticResource Borde}"/>
         <Setter Property="VerticalGridLinesBrush" Value="{StaticResource Borde}"/>
         <Setter Property="RowHeaderWidth" Value="0"/>
+    </Style>
+
+    <Style TargetType="RadioButton">
+        <Setter Property="Margin" Value="0,3"/>
+        <Setter Property="Foreground" Value="{StaticResource Texto}"/>
+    </Style>
+
+    <!--Ayuda corta debajo de un control-->
+    <Style x:Key="Ayuda" TargetType="TextBlock">
+        <Setter Property="Margin" Value="20,0,0,6"/>
+        <Setter Property="FontSize" Value="11"/>
+        <Setter Property="TextWrapping" Value="Wrap"/>
+        <Setter Property="Foreground" Value="{StaticResource TextoSuave}"/>
     </Style>
 
     <!--Tarjeta para agrupar los datos de cada herramienta-->

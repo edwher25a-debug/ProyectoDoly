@@ -4,9 +4,9 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
-using Doly.Core.Ejes;
+using ProyectoNice.Puentes.Ejes;
 
-namespace Doly.Core.LandXml
+namespace ProyectoNice.Puentes.LandXml
 {
     //Alineamiento leido de un LandXML con sus rasantes disponibles
     public sealed class AlineamientoLandXml

@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Doly.Core.Ejes
+namespace ProyectoNice.Puentes.Ejes
 {
     //Punto de inflexion vertical: estacion, cota y longitud de la curva parabolica (0 = sin curva)
     public sealed class PuntoVertical

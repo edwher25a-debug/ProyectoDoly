@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Doly.Core.Ejes
+namespace ProyectoNice.Puentes.Ejes
 {
     /// <summary>
     ///     Sucesion de tramos (rectas, arcos y clotoides) con su estacionamiento

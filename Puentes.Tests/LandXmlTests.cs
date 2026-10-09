@@ -1,9 +1,9 @@
 using System.Text;
-using Doly.Core.Ejes;
-using Doly.Core.LandXml;
+using ProyectoNice.Puentes.Ejes;
+using ProyectoNice.Puentes.LandXml;
 using Xunit;
 
-namespace Doly.Core.Tests
+namespace ProyectoNice.Puentes.Tests
 {
     public class LandXmlTests
     {

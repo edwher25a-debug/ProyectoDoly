@@ -1,11 +1,11 @@
 using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
-using ProyectoDoly.Revit;
-using ProyectoDoly.ViewModels;
-using ProyectoDoly.Views;
+using ProyectoNice.Puentes;
+using ProyectoNice.ViewModels;
+using ProyectoNice.Views;
 
-namespace ProyectoDoly.Commands
+namespace ProyectoNice.Commands
 {
     /// <summary>
     ///     Importa un eje desde LandXML y lo dibuja en el modelo

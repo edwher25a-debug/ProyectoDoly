@@ -1,7 +1,7 @@
-using Doly.Core.Ejes;
+using ProyectoNice.Puentes.Ejes;
 using Xunit;
 
-namespace Doly.Core.Tests
+namespace ProyectoNice.Puentes.Tests
 {
     public class GeometriaTests
     {
