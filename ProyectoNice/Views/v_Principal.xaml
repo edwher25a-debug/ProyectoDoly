@@ -19,13 +19,6 @@
             </CollectionViewSource>
 
             <!--Vista de cada herramienta segun su viewmodel-->
-            <DataTemplate DataType="{x:Type vm:vm_ACEROS_PILOTES}"><local:v_ACEROS_PILOTES/></DataTemplate>
-            <DataTemplate DataType="{x:Type vm:vm_CrearSuelos}"><local:v_CrearSuelos/></DataTemplate>
-            <DataTemplate DataType="{x:Type vm:vm_TuberiasporCAD}"><local:v_TuberiasporCAD/></DataTemplate>
-            <DataTemplate DataType="{x:Type vm:vm_InsertFamily}"><local:v_InsertFamily/></DataTemplate>
-            <DataTemplate DataType="{x:Type vm:vm_CoordCompartidas}"><local:v_CoordCompartidas/></DataTemplate>
-            <DataTemplate DataType="{x:Type vm:vm_TrabajoHome}"><local:v_TrabajoHome/></DataTemplate>
-            <DataTemplate DataType="{x:Type vm:TrabajoFinal}"><local:v_TrabajoFinal/></DataTemplate>
             <DataTemplate DataType="{x:Type vm:vm_ExportarFichas}"><local:v_ExportarFichas/></DataTemplate>
         </ResourceDictionary>
     </Window.Resources>
