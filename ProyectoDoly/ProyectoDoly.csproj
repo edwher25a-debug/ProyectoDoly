@@ -58,6 +58,8 @@
         <Resource Include="Resources\Icons\RibbonIcon32.png" />
         <Resource Include="Resources\Icons\ImportarEje16.png" />
         <Resource Include="Resources\Icons\ImportarEje32.png" />
+        <Resource Include="Resources\Icons\Superestructura16.png" />
+        <Resource Include="Resources\Icons\Superestructura32.png" />
     </ItemGroup>
 
 </Project>

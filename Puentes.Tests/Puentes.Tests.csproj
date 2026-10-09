@@ -17,6 +17,7 @@
         <!--El motor del eje no depende de Revit: se compila aqui directamente desde ProyectoDoly-->
         <Compile Include="..\ProyectoDoly\Puentes\Ejes\*.cs" Link="Puentes\Ejes\%(Filename)%(Extension)" />
         <Compile Include="..\ProyectoDoly\Puentes\LandXml\*.cs" Link="Puentes\LandXml\%(Filename)%(Extension)" />
+        <Compile Include="..\ProyectoDoly\Puentes\Superestructura\*.cs" Link="Puentes\Superestructura\%(Filename)%(Extension)" />
     </ItemGroup>
 
     <ItemGroup>
