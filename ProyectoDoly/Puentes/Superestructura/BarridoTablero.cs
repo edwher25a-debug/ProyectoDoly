@@ -107,9 +107,13 @@ namespace ProyectoDoly.Puentes.Superestructura
                     }
                 }
 
-                //02_Tapas: al inicio la seccion mira hacia atras, al final hacia adelante
-                solido.Caras.Add(new Cara(anillos.Select(c => (IReadOnlyList<Punto3>)c[0]).ToList()));
-                solido.Caras.Add(new Cara(anillos.Select(c => (IReadOnlyList<Punto3>)Enumerable.Reverse(c[c.Count - 1]).ToArray()).ToList()));
+                //02_Tapas en triangulos: al inicio la seccion mira hacia atras, al final hacia adelante
+                int ultima = secciones.Count - 1;
+                foreach ((RefVertice a, RefVertice b, RefVertice c) in Triangulacion.Triangular(pieza))
+                {
+                    solido.Caras.Add(Triangulo(Punto(anillos, a, 0), Punto(anillos, b, 0), Punto(anillos, c, 0)));
+                    solido.Caras.Add(Triangulo(Punto(anillos, a, ultima), Punto(anillos, c, ultima), Punto(anillos, b, ultima)));
+                }
 
                 solidos.Add(solido);
             }
@@ -155,6 +159,8 @@ namespace ProyectoDoly.Puentes.Superestructura
                 return new Punto3(p.Posicion.X + derechaX * x, p.Posicion.Y + derechaY * x, p.Posicion.Z + y);
             }).ToArray();
         }
+
+        private static Punto3 Punto(List<List<Punto3[]>> anillos, RefVertice r, int estacion) => anillos[r.Contorno][estacion][r.Vertice];
 
         private static Cara Triangulo(Punto3 a, Punto3 b, Punto3 c) => new Cara(new[] { (IReadOnlyList<Punto3>)new[] { a, b, c } });
     }
