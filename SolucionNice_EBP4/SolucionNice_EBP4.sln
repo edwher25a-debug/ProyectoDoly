@@ -16,7 +16,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Build", "build\Build.csproj
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Installer", "install\Installer.csproj", "{31324A10-9F30-4E1E-8B23-BFE35D6CA4A3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProyectoNice", "..\ProyectoNice\ProyectoNice.csproj", "{6DEDCC95-62E0-45AD-BBF8-674797F4E253}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProyectoDoly", "..\ProyectoDoly\ProyectoDoly.csproj", "{6DEDCC95-62E0-45AD-BBF8-674797F4E253}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

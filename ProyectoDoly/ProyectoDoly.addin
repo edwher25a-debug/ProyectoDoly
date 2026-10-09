@@ -1,0 +1,15 @@
+﻿<RevitAddIns>
+    <AddIn Type="Application">
+        <Name>ProyectoDoly</Name>
+        <Assembly>ProyectoDoly\ProyectoDoly.dll</Assembly>
+        <AddInId>42442ACF-0AD4-460E-AB9E-303930D1D386</AddInId>
+        <FullClassName>ProyectoDoly.Application</FullClassName>
+        <VendorId>Development</VendorId>
+        <VendorDescription></VendorDescription>
+        <VendorEmail></VendorEmail>
+    </AddIn>
+    <ManifestSettings>
+        <UseRevitContext>False</UseRevitContext>
+        <ContextName>ProyectoDoly</ContextName>
+    </ManifestSettings>
+</RevitAddIns>
