@@ -1,7 +1,7 @@
 <Window x:Class="ProyectoDoly.Views.v_Superestructura"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Superestructura" Width="880" Height="760" MinWidth="780" MinHeight="680"
+        Title="Superestructura" Width="940" Height="860" MinWidth="820" MinHeight="700"
         WindowStartupLocation="CenterScreen" ResizeMode="CanResizeWithGrip"
         Background="{DynamicResource Fondo}" Foreground="{DynamicResource Texto}">
     <Window.Resources>
@@ -9,6 +9,7 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/ProyectoDoly;component/Views/Estilos.xaml"/>
             </ResourceDictionary.MergedDictionaries>
+            <BooleanToVisibilityConverter x:Key="VisibleSi"/>
         </ResourceDictionary>
     </Window.Resources>
 
@@ -43,7 +44,8 @@
             </Grid.ColumnDefinitions>
 
             <!--Pasos-->
-            <StackPanel Grid.Column="0">
+            <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
                 <GroupBox Header="1  ·  Eje">
                     <StackPanel>
                         <ComboBox ItemsSource="{Binding Ejes}" SelectedItem="{Binding EjeSelecc}"/>
@@ -62,7 +64,25 @@
                     </StackPanel>
                 </GroupBox>
 
-                <GroupBox Header="3  ·  Tramo y ubicación">
+                <GroupBox Header="3  ·  Parámetros a lo largo del tablero">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource Ayuda}" Margin="0,0,0,6" TextWrapping="Wrap"
+                                   Text="Deje vacío lo que no cambia. Para variar un parámetro escriba sus valores por estación, por ejemplo  0+000 = 1.20; 0+040 = 1.80; 0+080 = 1.20. Entre estaciones se interpola en línea recta y fuera de ellas se mantiene el valor extremo."/>
+                        <TextBlock Style="{StaticResource Ayuda}" Text="La familia no tiene parámetros numéricos editables (longitud, ángulo o número)."
+                                   Visibility="{Binding SinParametros, Converter={StaticResource VisibleSi}}"/>
+                        <DataGrid ItemsSource="{Binding Parametros}" AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False"
+                                  HeadersVisibility="Column" MaxHeight="220" VerticalScrollBarVisibility="Auto">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Parámetro" Binding="{Binding Nombre}" IsReadOnly="True" Width="Auto"/>
+                                <DataGridTextColumn Header="Valor del tipo" Binding="{Binding ValorTipo}" IsReadOnly="True" Width="Auto"/>
+                                <DataGridTextColumn Header="De" Binding="{Binding Origen}" IsReadOnly="True" Width="Auto"/>
+                                <DataGridTextColumn Header="Valores por estación" Binding="{Binding Variacion, UpdateSourceTrigger=LostFocus}" Width="*"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </StackPanel>
+                </GroupBox>
+
+                <GroupBox Header="4  ·  Tramo y ubicación">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
@@ -93,7 +113,7 @@
                     </Grid>
                 </GroupBox>
 
-                <GroupBox Header="4  ·  Cómo se crea">
+                <GroupBox Header="5  ·  Cómo se crea">
                     <StackPanel>
                         <RadioButton IsChecked="{Binding FamiliaAdaptativa}" Content="Familia adaptativa (como SOFiSTiK)"/>
                         <TextBlock Style="{StaticResource Ayuda}" Text="Un ejemplar por tramo con la sección en sus puntos adaptativos y una solevación sólida. Se puede editar, tiene material y queda agrupado."/>
@@ -102,6 +122,7 @@
                     </StackPanel>
                 </GroupBox>
             </StackPanel>
+            </ScrollViewer>
 
             <!--Vista previa-->
             <GroupBox Grid.Column="2" Header="Vista previa" VerticalAlignment="Top">
@@ -139,6 +160,10 @@
                         </Grid>
                     </Border>
                     <TextBlock Style="{StaticResource Subtitulo}" Text="● punto del eje (rasante)"/>
+                    <DockPanel Margin="0,8,0,0">
+                        <TextBlock Text="Ver sección en la estación  " VerticalAlignment="Center" ToolTip="Vacío = estación inicial del tramo. Sirve para revisar los parámetros variables."/>
+                        <TextBox Text="{Binding EstacionVista, UpdateSourceTrigger=PropertyChanged}"/>
+                    </DockPanel>
 
                     <TextBlock Text="{Binding Resumen}" Margin="0,10,0,0" TextWrapping="Wrap" LineHeight="20"/>
                 </StackPanel>

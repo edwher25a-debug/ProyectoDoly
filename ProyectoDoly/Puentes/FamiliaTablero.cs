@@ -15,7 +15,8 @@ namespace ProyectoDoly.Puentes
         {
             Eje eje = opciones.Eje.Eje;
             Transform transformacion = opciones.Eje.Transformacion;
-            List<Punto3[]> estaciones = BarridoTablero.PuntosPorEstacion(eje, opciones.Seccion, opciones.Barrido);
+            List<Punto3[]> estaciones = BarridoTablero.PuntosPorEstacion(eje, opciones.Secciones(), opciones.Barrido);
+            List<double> enEstacion = opciones.Estaciones();
             if (estaciones.Count < 2) throw new InvalidOperationException("El tramo necesita al menos dos secciones.");
 
             List<XYZ[]> puntos = estaciones
@@ -49,7 +50,8 @@ namespace ProyectoDoly.Puentes
 
                     if (material != ElementId.InvalidElementId) ejemplar.LookupParameter(NombreMaterial)?.Set(material);
                     ejemplar.get_Parameter(BuiltInParameter.ALL_MODEL_INSTANCE_COMMENTS)?
-                        .Set($"Tablero {eje.Nombre} | tramo {k + 1} | {Eje.FormatoEstacion(eje.EstacionInicial)}");
+                        .Set($"Tablero {eje.Nombre} | tramo {k + 1} | {Eje.FormatoEstacion(enEstacion[k])} a {Eje.FormatoEstacion(enEstacion[k + 1])}" +
+                             ValoresTramo(opciones.Variables, enEstacion[k], enEstacion[k + 1]));
                     ejemplares.Add(ejemplar.Id);
                 }
 
@@ -79,13 +81,17 @@ namespace ProyectoDoly.Puentes
                               $"Sección: {opciones.Seccion.Nombre}\n" +
                               $"Desde {Eje.FormatoEstacion(opciones.Barrido.EstacionInicial)} hasta {Eje.FormatoEstacion(opciones.Barrido.EstacionFinal)} ({longitud:F2} m)\n" +
                               $"Tramos: {ejemplares.Count} (un ejemplar por tramo, agrupados)\n" +
-                              $"Puntos adaptativos por tramo: {2 * puntos[0].Length}\n" +
-                              $"Volumen aproximado: {opciones.Seccion.Area * longitud:F2} m³"
+                              $"Puntos adaptativos por tramo: {2 * puntos[0].Length}{opciones.TextoVariables}\n" +
+                              $"Volumen aproximado: {opciones.VolumenAproximado():F2} m³"
                 };
             }
         }
 
         private const string NombreMaterial = "Material";
+
+        //Valores de los parametros variables al inicio y al final del tramo, para verlos en Comentarios
+        private static string ValoresTramo(List<Variable> variables, double inicio, double fin) =>
+            string.Concat(variables.Select(v => $" | {v.Nombre} {v.ValorEn(inicio):0.###}→{v.ValorEn(fin):0.###}"));
 
         private static Family CrearFamilia(Document doc, SeccionTransversal seccion, XYZ[] inicio, XYZ[] fin)
         {

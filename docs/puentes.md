@@ -21,11 +21,16 @@ Archivo de prueba: `Puentes.Tests/Datos/eje_prueba.xml`.
 
 1. Importar el eje (los ejes importados antes de esta versión deben importarse de nuevo: ahora el eje queda guardado en el modelo).
 2. Superestructura: elegir el eje, la familia de sección y su tipo (o *Cargar familia…*), el tramo de estaciones y el paso.
-3. *Cómo se crea*: **familia adaptativa** (por defecto, como SOFiSTiK) o **sólido directo**. La familia adaptativa
+3. *Parámetros a lo largo del tablero* (como las variables de SOFiSTiK): la tabla muestra los parámetros numéricos de la
+   familia (longitud, ángulo o número). Para variar uno se escriben sus valores por estación, `0+000 = 1.20; 0+040 = 1.80`;
+   entre estaciones se interpola en línea recta. La familia se evalúa en cada estación del barrido (`Puentes/LectorSeccion.cs`,
+   sin modificar la familia del proyecto) y las secciones se alinean vértice a vértice (`SeccionVariable.Alinear`), por lo que
+   la forma debe conservar el mismo número de vértices. *Ver sección en la estación* muestra la sección en cualquier punto.
+4. *Cómo se crea*: **familia adaptativa** (por defecto, como SOFiSTiK) o **sólido directo**. La familia adaptativa
    (`Puentes/FamiliaTablero.cs`) se genera desde la plantilla "Modelo genérico adaptativo": sus puntos adaptativos son los
    vértices de la sección al inicio y al final de un tramo, unidos por una solevación sólida (los huecos, vacías), con
    parámetro de material. Se coloca un ejemplar por tramo y todos quedan en un grupo.
-4. El tablero se crea como un sólido con secciones verticales, perpendiculares al eje en planta y a la cota de la rasante.
+5. El tablero se crea como un sólido con secciones verticales, perpendiculares al eje en planta y a la cota de la rasante.
 
 La sección se lee de la familia así: si tiene sólidos, se toma la cara plana del lado donde la familia es más delgada
 (una extrusión fina dibujada de frente); si no, las líneas cerradas. El origen de la familia es el punto del eje sobre la rasante,

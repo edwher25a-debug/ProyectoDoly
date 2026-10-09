@@ -20,6 +20,33 @@ namespace ProyectoDoly.ViewModels
         public override string ToString() => Nombre;
     }
 
+    //Fila de la tabla de parametros: valor del tipo y, si cambia a lo largo del tablero, sus valores por estacion
+    public sealed class FilaParametro : ObservableObject
+    {
+        private readonly Action cambio;
+
+        public FilaParametro(ParametroSeccion parametro, Action cambio)
+        {
+            Parametro = parametro;
+            this.cambio = cambio;
+        }
+
+        public ParametroSeccion Parametro { get; }
+        public string Nombre => Parametro.Nombre + (Parametro.Simbolo.Length > 0 ? $" ({Parametro.Simbolo})" : "");
+        public string ValorTipo => Parametro.Valor.ToString("0.###", CultureInfo.InvariantCulture);
+        public string Origen => Parametro.DeTipo ? "tipo" : "ejemplar";
+
+        private string variacion = "";
+        public string Variacion
+        {
+            get => variacion;
+            set
+            {
+                if (SetProperty(ref variacion, value)) cambio();
+            }
+        }
+    }
+
     //Poligono de la vista previa de la seccion
     public sealed class FormaSeccion
     {
@@ -34,7 +61,11 @@ namespace ProyectoDoly.ViewModels
         public const double AltoVista = 200;
 
         private readonly Document doc;
-        private readonly Dictionary<ElementId, SeccionTransversal> secciones = new Dictionary<ElementId, SeccionTransversal>();
+
+        //Familia de seccion abierta en segundo plano mientras la ventana esta abierta
+        private LectorSeccion? lector;
+        private ElementId? tipoLeido;
+        private string? errorLector;
 
         public vm_Superestructura(Document doc, List<EjeGuardado> ejes, ElementId? ejePreseleccionado)
         {
@@ -45,6 +76,7 @@ namespace ProyectoDoly.ViewModels
 
             foreach (EjeGuardado eje in ejes) Ejes.Add(eje);
             CargarTipos(null);
+            AbrirLector();
 
             EjeSelecc = Ejes.FirstOrDefault(e => e.Id == ejePreseleccionado) ?? Ejes.FirstOrDefault();
         }
@@ -82,7 +114,24 @@ namespace ProyectoDoly.ViewModels
             get => tipoSelecc;
             set
             {
-                if (SetProperty(ref tipoSelecc, value)) Actualizar();
+                if (!SetProperty(ref tipoSelecc, value)) return;
+                AbrirLector();
+                Actualizar();
+            }
+        }
+
+        //Parametros de la familia; los que tienen valores por estacion cambian a lo largo del tablero
+        public ObservableCollection<FilaParametro> Parametros { get; } = new ObservableCollection<FilaParametro>();
+        public bool SinParametros => Parametros.Count == 0;
+
+        //Estacion de la vista previa (vacio = estacion inicial)
+        private string estacionVista = "";
+        public string EstacionVista
+        {
+            get => estacionVista;
+            set
+            {
+                if (SetProperty(ref estacionVista, value)) Actualizar();
             }
         }
 
@@ -219,9 +268,10 @@ namespace ProyectoDoly.ViewModels
             {
                 Family familia = SeccionFamilia.Cargar(doc, dialogo.FileName);
 
-                //La familia pudo cambiar: se vuelven a leer sus tipos
-                foreach (ElementId id in familia.GetFamilySymbolIds()) secciones.Remove(id);
+                //La familia pudo cambiar: se vuelve a abrir
+                tipoLeido = null;
                 CargarTipos(familia.Id);
+                AbrirLector();
                 Actualizar();
             }
             catch (Exception ex) when (ex is InvalidOperationException || ex is Autodesk.Revit.Exceptions.ApplicationException)
@@ -238,7 +288,22 @@ namespace ProyectoDoly.ViewModels
             Formas.Clear();
             origen = new Point(-100, -100);
 
-            SeccionTransversal? seccion = LeerSeccion();
+            List<Variable>? variables = null;
+            try
+            {
+                variables = Variables();
+            }
+            catch (ArgumentException ex)
+            {
+                MostrarError(ex.Message);
+            }
+
+            //Vista previa en la estacion pedida o al inicio del tramo
+            double estacion = 0;
+            if (!LeerNumero(EstacionVista, out estacion) && !LeerNumero(EstacionInicial, out estacion))
+                estacion = EjeSelecc?.Eje.EstacionInicial ?? 0;
+
+            SeccionTransversal? seccion = variables != null ? LeerSeccion(variables, estacion) : null;
             if (seccion != null)
             {
                 if (Espejo) seccion = seccion.Espejo();
@@ -250,14 +315,66 @@ namespace ProyectoDoly.ViewModels
 
             if (EjeSelecc == null)
                 MostrarError("Importe primero un eje con el botón Importar eje.");
-            else if (seccion != null)
-                Validar(EjeSelecc, seccion);
+            else if (seccion != null && variables != null)
+                Validar(EjeSelecc, seccion, variables);
 
             CrearBT.NotifyCanExecuteChanged();
             OnPropertyChanged(nameof(PuedeCrear));
         }
 
-        private SeccionTransversal? LeerSeccion()
+        //Abre la familia del tipo elegido y llena la tabla de parametros (se conservan los valores escritos si coinciden)
+        private void AbrirLector()
+        {
+            if (TipoSelecc?.Tipo.Id == tipoLeido && lector != null) return;
+
+            Dictionary<string, string> anteriores = Parametros.Where(f => f.Variacion.Length > 0).ToDictionary(f => f.Parametro.Nombre, f => f.Variacion);
+            Liberar();
+            Parametros.Clear();
+            errorLector = null;
+            tipoLeido = TipoSelecc?.Tipo.Id;
+
+            if (TipoSelecc != null)
+            {
+                try
+                {
+                    lector = new LectorSeccion(doc, TipoSelecc.Tipo);
+                    foreach (ParametroSeccion parametro in lector.Parametros)
+                    {
+                        FilaParametro fila = new FilaParametro(parametro, Actualizar);
+                        if (anteriores.TryGetValue(parametro.Nombre, out string? texto)) fila.Variacion = texto;
+                        Parametros.Add(fila);
+                    }
+                }
+                catch (Exception ex) when (ex is InvalidOperationException || ex is ArgumentException || ex is Autodesk.Revit.Exceptions.ApplicationException)
+                {
+                    errorLector = ex.Message;
+                }
+            }
+
+            OnPropertyChanged(nameof(SinParametros));
+        }
+
+        //Cierra la familia abierta en segundo plano (al cambiar de tipo y al cerrar la ventana)
+        public void Liberar()
+        {
+            lector?.Dispose();
+            lector = null;
+        }
+
+        //Parametros con valores por estacion
+        private List<Variable> Variables()
+        {
+            List<Variable> variables = new List<Variable>();
+            foreach (FilaParametro fila in Parametros)
+            {
+                Variable? variable = SeccionVariable.Leer(fila.Parametro.Nombre, fila.Variacion);
+                if (variable != null) variables.Add(variable);
+            }
+
+            return variables;
+        }
+
+        private SeccionTransversal? LeerSeccion(List<Variable> variables, double estacion)
         {
             Resumen = "";
             if (TipoSelecc == null)
@@ -266,28 +383,31 @@ namespace ProyectoDoly.ViewModels
                 return null;
             }
 
-            //Leer una familia la abre en segundo plano: se guarda lo leido por tipo
-            if (!secciones.TryGetValue(TipoSelecc.Tipo.Id, out SeccionTransversal? seccion))
+            if (lector == null)
             {
-                try
-                {
-                    seccion = SeccionFamilia.Leer(doc, TipoSelecc.Tipo);
-                    secciones[TipoSelecc.Tipo.Id] = seccion;
-                }
-                catch (Exception ex) when (ex is InvalidOperationException || ex is ArgumentException || ex is Autodesk.Revit.Exceptions.ApplicationException)
-                {
-                    MostrarError($"No se pudo leer la sección: {ex.Message}");
-                    return null;
-                }
+                MostrarError($"No se pudo abrir la familia: {errorLector}");
+                return null;
             }
 
-            Resumen = $"Ancho: {seccion.MaxX - seccion.MinX:F3} m  ·  Canto: {seccion.MaxY - seccion.MinY:F3} m\n" +
+            SeccionTransversal seccion;
+            try
+            {
+                seccion = lector.Leer(SeccionVariable.ValoresEn(variables, estacion));
+            }
+            catch (Exception ex) when (ex is InvalidOperationException || ex is ArgumentException || ex is Autodesk.Revit.Exceptions.ApplicationException)
+            {
+                MostrarError($"No se pudo leer la sección: {ex.Message}");
+                return null;
+            }
+
+            Resumen = (variables.Count > 0 ? $"En {Eje.FormatoEstacion(estacion)}:\n" : "") +
+                      $"Ancho: {seccion.MaxX - seccion.MinX:F3} m  ·  Canto: {seccion.MaxY - seccion.MinY:F3} m\n" +
                       $"Área: {seccion.Area:F3} m²  ·  Piezas: {seccion.Piezas.Count}" +
                       (seccion.Piezas.Any(p => p.Huecos.Count > 0) ? $", huecos: {seccion.Piezas.Sum(p => p.Huecos.Count)}" : "");
             return seccion;
         }
 
-        private void Validar(EjeGuardado eje, SeccionTransversal seccion)
+        private void Validar(EjeGuardado eje, SeccionTransversal seccion, List<Variable> variables)
         {
             if (!LeerNumero(EstacionInicial, out double inicial) || !LeerNumero(EstacionFinal, out double final))
             {
@@ -314,16 +434,20 @@ namespace ProyectoDoly.ViewModels
             }
 
             double longitud = final - inicial;
-            Resumen += $"\n\nTramo: {longitud:F2} m  ·  Volumen ≈ {seccion.Area * longitud:F1} m³\n" +
-                       $"Secciones: {(int)Math.Ceiling(longitud / pasoValor) + 1} o más (se añaden en cada cambio de tramo)";
+            Resumen += $"\n\nTramo: {longitud:F2} m" + (variables.Count == 0 ? $"  ·  Volumen ≈ {seccion.Area * longitud:F1} m³" : "") + "\n" +
+                       $"Secciones: {(int)Math.Ceiling(longitud / pasoValor) + 1} o más (se añaden en cada cambio de tramo" +
+                       (variables.Count > 0 ? " y en cada estación de los parámetros)" : ")");
+            if (variables.Count > 0) Resumen += $"\nVariables: {string.Join(", ", variables.Select(v => v.Nombre))}";
 
             listo = new OpcionesSuperestructura
             {
                 Eje = eje,
                 FamiliaAdaptativa = FamiliaAdaptativa,
                 Seccion = seccion,
+                Variables = variables,
                 Barrido = new OpcionesBarrido
                 {
+                    EstacionesExtra = variables.SelectMany(v => v.Valores.Select(p => p.estacion)).Distinct().ToList(),
                     EstacionInicial = inicial,
                     EstacionFinal = final,
                     Paso = pasoValor,
@@ -337,6 +461,21 @@ namespace ProyectoDoly.ViewModels
         {
             if (listo == null) return;
             listo.FamiliaAdaptativa = FamiliaAdaptativa;
+
+            //Con parametros variables se evalua la familia en cada estacion del barrido
+            if (listo.Variables.Count > 0 && lector != null)
+            {
+                try
+                {
+                    listo.PorEstacion = SeccionesPorEstacion.Calcular(lector, listo.Estaciones(), listo.Variables, Espejo);
+                }
+                catch (Exception ex) when (ex is InvalidOperationException || ex is ArgumentException || ex is Autodesk.Revit.Exceptions.ApplicationException)
+                {
+                    Error = ex.Message;
+                    return;
+                }
+            }
+
             Opciones = listo;
             Cerrar?.Invoke(true);
         }

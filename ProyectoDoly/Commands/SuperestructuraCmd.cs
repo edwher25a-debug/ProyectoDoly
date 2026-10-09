@@ -45,7 +45,18 @@ namespace ProyectoDoly.Commands
                 v_Superestructura view = new v_Superestructura { DataContext = viewModel };
                 viewModel.Cerrar = aceptado => view.DialogResult = aceptado;
 
-                if (view.ShowDialog() != true || viewModel.Opciones == null) return Result.Cancelled;
+                //La familia de seccion queda abierta en segundo plano mientras la ventana esta abierta
+                bool aceptado;
+                try
+                {
+                    aceptado = view.ShowDialog() == true;
+                }
+                finally
+                {
+                    viewModel.Liberar();
+                }
+
+                if (!aceptado || viewModel.Opciones == null) return Result.Cancelled;
 
                 paso = "crear el tablero en el modelo";
                 ResultadoSuperestructura resultado = viewModel.Opciones.FamiliaAdaptativa

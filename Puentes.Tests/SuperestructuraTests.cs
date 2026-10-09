@@ -241,5 +241,60 @@ namespace ProyectoDoly.Puentes.Tests
             Eje sinRasante = SerializadorEje.Leer(SerializadorEje.Escribir(alineamiento.CrearEje(null)));
             Assert.False(sinRasante.TieneRasante);
         }
+
+        [Fact]
+        public void Variable_de_seccion_se_lee_por_estacion_e_interpola()
+        {
+            Variable? canto = SeccionVariable.Leer("Height", "0+000 = 1,20; 40 = 1.80\n0+080=1.2");
+            Assert.NotNull(canto);
+            Assert.Equal(3, canto!.Valores.Count);
+            Assert.Equal(1.5, canto.ValorEn(20), 9);
+            Assert.Equal(1.2, canto.ValorEn(200), 9);
+            Assert.Null(SeccionVariable.Leer("Height", "  "));
+            Assert.Throws<ArgumentException>(() => SeccionVariable.Leer("Height", "0+000 1.2"));
+            Assert.Throws<ArgumentException>(() => SeccionVariable.Leer("Height", "10=1; 10=2"));
+        }
+
+        [Fact]
+        public void Alinear_reordena_piezas_y_vertices_como_la_seccion_anterior()
+        {
+            SeccionTransversal referencia = SeccionTransversal.DesdeContornos("A", new[] { Rectangulo(-5, -0.3, 5, 0), Rectangulo(-1, -2, 1, -0.3) });
+
+            //Misma forma algo mas alta, con las piezas en otro orden y cada contorno empezando en otro vertice
+            Contorno losa = new Contorno(new[] { new Punto2(5, 0), new Punto2(-5, 0), new Punto2(-5, -0.3), new Punto2(5, -0.3) });
+            Contorno alma = new Contorno(new[] { new Punto2(1, -2.4), new Punto2(1, -0.3), new Punto2(-1, -0.3), new Punto2(-1, -2.4) });
+            SeccionTransversal nueva = new SeccionTransversal("B", new[] { new Pieza(alma), new Pieza(losa) });
+
+            SeccionTransversal alineada = SeccionVariable.Alinear(nueva, referencia);
+
+            for (int p = 0; p < 2; p++)
+            for (int v = 0; v < 4; v++)
+            {
+                Punto2 a = referencia.Piezas[p].Exterior.Puntos[v], b = alineada.Piezas[p].Exterior.Puntos[v];
+                Assert.True(a.Distancia(b) < 0.5, $"pieza {p} vertice {v}");
+            }
+
+            SeccionTransversal otra = SeccionTransversal.DesdeContornos("C", new[] { Rectangulo(-5, -0.3, 5, 0) });
+            Assert.Throws<InvalidOperationException>(() => SeccionVariable.Alinear(otra, referencia));
+        }
+
+        [Fact]
+        public void Barrido_con_canto_variable_da_el_volumen_del_trapecio_y_secciones_en_las_estaciones_de_la_variable()
+        {
+            Eje eje = EjeRecto(100);
+            OpcionesBarrido opciones = new OpcionesBarrido { EstacionInicial = 0, EstacionFinal = 60, Paso = 25, EstacionesExtra = { 33 } };
+            List<double> estaciones = BarridoTablero.Estaciones(eje, opciones);
+            Assert.Contains(estaciones, e => Math.Abs(e - 33) < 1e-9);
+
+            //Canto de 1 m a 2 m: rectangulo de 4 m de ancho
+            List<SeccionTransversal> secciones = estaciones
+                .Select(e => SeccionTransversal.DesdeContornos("V", new[] { Rectangulo(-2, -(1 + e / 60), 2, 0) }))
+                .ToList();
+
+            SolidoBarrido solido = Assert.Single(BarridoTablero.Generar(eje, secciones, opciones));
+            Assert.Equal(4 * 1.5 * 60, BarridoTablero.Volumen(solido), 6);
+            Assert.Equal(estaciones.Count, BarridoTablero.PuntosPorEstacion(eje, secciones, opciones).Count);
+            Assert.Throws<ArgumentException>(() => BarridoTablero.Generar(eje, secciones.Skip(1).ToList(), opciones));
+        }
     }
 }
