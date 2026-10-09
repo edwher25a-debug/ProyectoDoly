@@ -4,6 +4,13 @@
     <BuildType Name="Release R24" />
   </Configurations>
   <Project Path="ProyectoDoly.csproj" />
-  <Project Path="../Doly.Core/Doly.Core.csproj" />
-  <Project Path="../Doly.Core.Tests/Doly.Core.Tests.csproj" />
+  <!--El motor y sus pruebas no dependen de Revit: usan Debug/Release normales-->
+  <Project Path="../Doly.Core/Doly.Core.csproj">
+    <BuildType Solution="Debug R24|*" Project="Debug" />
+    <BuildType Solution="Release R24|*" Project="Release" />
+  </Project>
+  <Project Path="../Doly.Core.Tests/Doly.Core.Tests.csproj">
+    <BuildType Solution="Debug R24|*" Project="Debug" />
+    <BuildType Solution="Release R24|*" Project="Release" />
+  </Project>
 </Solution>
