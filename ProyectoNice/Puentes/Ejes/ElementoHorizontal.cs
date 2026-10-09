@@ -1,6 +1,6 @@
 using System;
 
-namespace Doly.Core.Ejes
+namespace ProyectoNice.Puentes.Ejes
 {
     public enum TipoElemento
     {

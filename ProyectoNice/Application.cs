@@ -50,6 +50,21 @@ namespace ProyectoNice
             };
 
             panel.AddItem(boton);
+
+            //Puentes: eje desde Civil 3D (siguientes pasos: tablero, pilas y estribos, planos)
+            RibbonPanel panelPuentes = application.CreateRibbonPanel(pestana, "Puentes");
+
+            var importarEje = new PushButtonData(nameof(ImportarEjeCmd), "Importar\neje",
+                Assembly.GetExecutingAssembly().Location, typeof(ImportarEjeCmd).FullName)
+            {
+                ToolTip = "Crea el eje del puente a partir de un LandXML exportado desde Civil 3D.",
+                LongDescription = "Lee el alineamiento (rectas, curvas y clotoides) y su rasante, muestra una vista previa " +
+                                  "y dibuja el eje 3D con marcas de estación en coordenadas compartidas o en el origen del proyecto.",
+                LargeImage = new BitmapImage(new Uri("pack://application:,,,/ProyectoNice;component/Resources/Icons/ImportarEje32.png")),
+                Image = new BitmapImage(new Uri("pack://application:,,,/ProyectoNice;component/Resources/Icons/ImportarEje16.png"))
+            };
+
+            panelPuentes.AddItem(importarEje);
         }
     }
 }

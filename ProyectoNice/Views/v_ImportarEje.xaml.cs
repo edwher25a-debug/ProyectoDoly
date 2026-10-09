@@ -1,6 +1,6 @@
 using System.Windows;
 
-namespace ProyectoDoly.Views
+namespace ProyectoNice.Views
 {
     public partial class v_ImportarEje : Window
     {

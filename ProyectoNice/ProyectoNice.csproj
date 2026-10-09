@@ -56,6 +56,8 @@
     <ItemGroup>
         <Resource Include="Resources\Icons\RibbonIcon16.png" />
         <Resource Include="Resources\Icons\RibbonIcon32.png" />
+        <Resource Include="Resources\Icons\ImportarEje16.png" />
+        <Resource Include="Resources\Icons\ImportarEje32.png" />
     </ItemGroup>
 
 </Project>

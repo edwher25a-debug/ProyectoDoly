@@ -3,7 +3,7 @@ using System.Windows;
 using System.Windows.Data;
 using Visibility = System.Windows.Visibility;
 
-namespace ProyectoDoly.Views
+namespace ProyectoNice.Views.Converters
 {
     //Convertidores de visibilidad usados con x:Static desde XAML
     public static class Visible

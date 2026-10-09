@@ -1,7 +1,7 @@
 using Autodesk.Revit.DB;
-using Doly.Core.Ejes;
+using ProyectoNice.Puentes.Ejes;
 
-namespace ProyectoDoly.Revit
+namespace ProyectoNice.Puentes
 {
     public enum Ubicacion
     {
@@ -85,7 +85,7 @@ namespace ProyectoDoly.Revit
                 transaccion.Start();
 
                 DirectShape forma = DirectShape.CreateElement(doc, new ElementId(BuiltInCategory.OST_GenericModel));
-                forma.ApplicationId = "ProyectoDoly";
+                forma.ApplicationId = "ProyectoNice";
                 forma.ApplicationDataId = eje.Nombre;
 
                 if (!forma.IsValidShape(geometria))
@@ -140,7 +140,7 @@ namespace ProyectoDoly.Revit
         }
 
         private static string Descripcion(Eje eje, OpcionesEje opciones) =>
-            $"Eje Doly | {eje.Nombre} | {Eje.FormatoEstacion(eje.EstacionInicial)} a {Eje.FormatoEstacion(eje.EstacionFinal)} | " +
+            $"Eje | {eje.Nombre} | {Eje.FormatoEstacion(eje.EstacionInicial)} a {Eje.FormatoEstacion(eje.EstacionFinal)} | " +
             $"Rasante: {(eje.TieneRasante ? eje.Vertical.Nombre : "ninguna")} | {System.IO.Path.GetFileName(opciones.Archivo)}";
 
         private static XYZ APies(Punto3 p) => new XYZ(

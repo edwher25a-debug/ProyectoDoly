@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Doly.Core.Ejes
+namespace ProyectoNice.Puentes.Ejes
 {
     //Resultado de evaluar el eje en una estacion
     public readonly struct PuntoEje

@@ -1,6 +1,6 @@
 using System;
 
-namespace Doly.Core.Ejes
+namespace ProyectoNice.Puentes.Ejes
 {
     //Punto o vector en planta (X = Este, Y = Norte), en metros
     public readonly struct Punto2
