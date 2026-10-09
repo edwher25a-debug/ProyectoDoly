@@ -82,6 +82,48 @@ namespace ProyectoDoly.Puentes.Tests
         }
 
         [Fact]
+        public void Triangulacion_cubre_el_area_de_piezas_con_huecos_y_concavas()
+        {
+            SeccionTransversal[] secciones =
+            {
+                Cajon(),
+                SeccionTransversal.DesdeContornos("Bicelular", new[]
+                {
+                    Rectangulo(-6, -2, 6, 0), Rectangulo(-5, -1.7, -0.3, -0.3), Rectangulo(0.3, -1.7, 5, -0.3)
+                }),
+                SeccionTransversal.DesdeContornos("Losa con voladizos", new[]
+                {
+                    new Contorno(new[]
+                    {
+                        new Punto2(-6, 0), new Punto2(0, 0.12), new Punto2(6, 0), new Punto2(6, -0.2), new Punto2(3, -0.35),
+                        new Punto2(2.5, -1.8), new Punto2(-2.5, -1.8), new Punto2(-3, -0.35), new Punto2(-6, -0.2)
+                    })
+                })
+            };
+
+            foreach (SeccionTransversal seccion in secciones)
+            foreach (Pieza pieza in seccion.Piezas)
+            {
+                List<Contorno> contornos = pieza.Contornos.ToList();
+                Punto2 P(RefVertice r) => contornos[r.Contorno].Puntos[r.Vertice];
+
+                var triangulos = Triangulacion.Triangular(pieza);
+                double area = triangulos.Sum(t => ((P(t.b).X - P(t.a).X) * (P(t.c).Y - P(t.a).Y) - (P(t.b).Y - P(t.a).Y) * (P(t.c).X - P(t.a).X)) / 2);
+
+                Assert.All(triangulos, t => Assert.True((P(t.b).X - P(t.a).X) * (P(t.c).Y - P(t.a).Y) - (P(t.b).Y - P(t.a).Y) * (P(t.c).X - P(t.a).X) > 0));
+                Assert.Equal(pieza.Area, area, 9);
+            }
+        }
+
+        [Fact]
+        public void Malla_solo_tiene_triangulos()
+        {
+            List<SolidoBarrido> solidos = BarridoTablero.Generar(EjeRecto(20), Cajon(), new OpcionesBarrido { EstacionInicial = 0, EstacionFinal = 20, Paso = 5 });
+
+            Assert.All(solidos[0].Caras, c => Assert.Equal(3, Assert.Single(c.Lazos).Count));
+        }
+
+        [Fact]
         public void Volumen_en_recta_es_area_por_longitud_y_la_malla_mira_hacia_afuera()
         {
             Eje eje = EjeRecto(50);
