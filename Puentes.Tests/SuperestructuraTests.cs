@@ -68,6 +68,20 @@ namespace ProyectoDoly.Puentes.Tests
         }
 
         [Fact]
+        public void Contorno_une_puntos_a_menos_de_2_mm()
+        {
+            //Un arco teselado muy fino deja puntos casi iguales que Revit no acepta como bordes
+            Contorno contorno = new Contorno(new[]
+            {
+                new Punto2(0, 0), new Punto2(1, 0), new Punto2(1.0005, 0.0005), new Punto2(1, 1), new Punto2(0, 1), new Punto2(0.0001, 0)
+            });
+
+            Assert.Equal(4, contorno.Puntos.Count);
+            for (int i = 0; i < contorno.Puntos.Count; i++)
+                Assert.True(contorno.Puntos[i].Distancia(contorno.Puntos[(i + 1) % contorno.Puntos.Count]) > 0.002);
+        }
+
+        [Fact]
         public void Volumen_en_recta_es_area_por_longitud_y_la_malla_mira_hacia_afuera()
         {
             Eje eje = EjeRecto(50);

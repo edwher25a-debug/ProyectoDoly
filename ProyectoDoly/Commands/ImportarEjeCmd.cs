@@ -2,6 +2,7 @@ using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using ProyectoDoly.Puentes;
+using ProyectoDoly.Utils;
 using ProyectoDoly.ViewModels;
 using ProyectoDoly.Views;
 
@@ -39,6 +40,11 @@ namespace ProyectoDoly.Commands
             {
                 //Errores esperados (eje fuera de rango, geometria no valida): se explican al usuario
                 TaskDialog.Show("Importar eje", ex.Message);
+                return Result.Cancelled;
+            }
+            catch (Exception ex)
+            {
+                Diagnostico.MostrarError("Importar eje", "crear el eje en el modelo", ex);
                 return Result.Cancelled;
             }
         }
