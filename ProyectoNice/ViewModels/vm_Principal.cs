@@ -58,30 +58,7 @@ namespace ProyectoNice.ViewModels
 
             Herramientas = new List<m_Herramienta>
             {
-                new m_Herramienta { Grupo = "REFUERZO", Nombre = "Aceros pilotes",
-                    Descripcion = "Barras longitudinales y flejes circulares a partir de la cara superior del pilote.",
-                    Crear = () => new vm_ACEROS_PILOTES(doc, seleccion) },
-
-                new m_Herramienta { Grupo = "MODELADO", Nombre = "Crear suelos",
-                    Descripcion = "Suelo en los vanos que dejan las vigas y columnas estructurales.",
-                    Crear = () => new vm_CrearSuelos(doc, seleccion) },
-                new m_Herramienta { Grupo = "MODELADO", Nombre = "Tuberias desde CAD",
-                    Descripcion = "Tuberias a partir de una capa de un CAD vinculado (en desarrollo).",
-                    Crear = () => new vm_TuberiasporCAD(doc, seleccion) },
-                new m_Herramienta { Grupo = "MODELADO", Nombre = "Insertar entre puntos",
-                    Descripcion = "Familias de dos puntos en cadena entre las familias que seleccione.",
-                    Crear = () => new vm_InsertFamily(doc, seleccion) },
-                new m_Herramienta { Grupo = "MODELADO", Nombre = "Colocar por coordenadas",
-                    Descripcion = "Familias en coordenadas compartidas desde la tabla o un CSV.",
-                    Crear = () => new vm_CoordCompartidas(doc) },
-
-                new m_Herramienta { Grupo = "DATOS", Nombre = "Coordenadas a parametros",
-                    Descripcion = "Escribe las coordenadas compartidas (m) en los parametros X, Y, Z de la categoria.",
-                    Crear = () => new vm_TrabajoHome(doc, seleccion) },
-                new m_Herramienta { Grupo = "DATOS", Nombre = "Codigo BIM",
-                    Descripcion = "Llena el parametro CodigoBIM: PROYECTO-CATEGORIA-ID-CONSECUTIVO.",
-                    Crear = () => new TrabajoFinal(doc, seleccion) },
-
+                //Aqui se agregan las herramientas nuevas (Grupo, Nombre, Descripcion, Crear)
                 new m_Herramienta { Grupo = "EXPORTAR", Nombre = "Fichas para grafo",
                     Descripcion = "Exporta una ficha markdown por elemento coordinable.",
                     Crear = () => new vm_ExportarFichas(doc) }
