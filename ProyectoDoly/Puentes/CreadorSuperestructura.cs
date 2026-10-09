@@ -9,6 +9,9 @@ namespace ProyectoDoly.Puentes
         public EjeGuardado Eje { get; set; } = null!;
         public SeccionTransversal Seccion { get; set; } = null!;
         public OpcionesBarrido Barrido { get; set; } = new OpcionesBarrido();
+
+        //true: familia adaptativa editable (un ejemplar por tramo); false: un solo solido directo (DirectShape)
+        public bool FamiliaAdaptativa { get; set; } = true;
     }
 
     public sealed class ResultadoSuperestructura
