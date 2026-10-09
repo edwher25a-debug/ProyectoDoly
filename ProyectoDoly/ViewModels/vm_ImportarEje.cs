@@ -177,7 +177,7 @@ namespace ProyectoDoly.ViewModels
                 foreach (AlineamientoLandXml alineamiento in archivo.Alineamientos) Alineamientos.Add(alineamiento);
                 AlineamientoSelecc = Alineamientos.FirstOrDefault();
             }
-            catch (Exception ex) when (ex is FormatException || ex is System.Xml.XmlException || ex is ArgumentException || ex is IOException)
+            catch (Exception ex) when (ex is System.FormatException || ex is System.Xml.XmlException || ex is System.ArgumentException || ex is System.IO.IOException)
             {
                 AlineamientoSelecc = null;
                 MostrarError($"No se pudo leer el archivo: {ex.Message}");
