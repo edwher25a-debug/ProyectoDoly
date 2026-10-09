@@ -34,29 +34,18 @@ namespace ProyectoDoly.Puentes
                 transaccion.Start();
 
                 ElementId material = MaterialHormigon(doc);
-                TessellatedShapeBuilder constructor = new TessellatedShapeBuilder
-                {
-                    Target = TessellatedShapeBuilderTarget.Solid,
-                    Fallback = TessellatedShapeBuilderFallback.Mesh,
-                    GraphicsStyleId = ElementId.InvalidElementId
-                };
 
-                foreach (SolidoBarrido solido in solidos)
+                //Primero como solido cerrado; si Revit no lo acepta, como malla salvando las caras validas
+                TessellatedShapeBuilderResult resultado;
+                try
                 {
-                    constructor.OpenConnectedFaceSet(true);
-                    foreach (Cara cara in solido.Caras)
-                    {
-                        List<IList<XYZ>> lazos = cara.Lazos
-                            .Select(l => (IList<XYZ>)l.Select(p => transformacion.OfPoint(CreadorEje.APies(p))).ToList())
-                            .ToList();
-                        constructor.AddFace(new TessellatedFace(lazos, material));
-                    }
-
-                    constructor.CloseConnectedFaceSet();
+                    resultado = Construir(solidos, transformacion, material, TessellatedShapeBuilderTarget.Solid, TessellatedShapeBuilderFallback.Mesh);
+                }
+                catch (Autodesk.Revit.Exceptions.ApplicationException)
+                {
+                    resultado = Construir(solidos, transformacion, material, TessellatedShapeBuilderTarget.AnyGeometry, TessellatedShapeBuilderFallback.Salvage);
                 }
 
-                constructor.Build();
-                TessellatedShapeBuilderResult resultado = constructor.GetBuildResult();
                 if (resultado.Outcome == TessellatedShapeBuilderOutcome.Nothing)
                     throw new InvalidOperationException("Revit no pudo construir el tablero. Pruebe con otro paso entre secciones.");
 
@@ -85,6 +74,34 @@ namespace ProyectoDoly.Puentes
                               $"Geometría: {tipoGeometria}"
                 };
             }
+        }
+
+        private static TessellatedShapeBuilderResult Construir(List<SolidoBarrido> solidos, Transform transformacion, ElementId material,
+            TessellatedShapeBuilderTarget objetivo, TessellatedShapeBuilderFallback alternativa)
+        {
+            TessellatedShapeBuilder constructor = new TessellatedShapeBuilder
+            {
+                Target = objetivo,
+                Fallback = alternativa,
+                GraphicsStyleId = ElementId.InvalidElementId
+            };
+
+            foreach (SolidoBarrido solido in solidos)
+            {
+                constructor.OpenConnectedFaceSet(true);
+                foreach (Cara cara in solido.Caras)
+                {
+                    List<IList<XYZ>> lazos = cara.Lazos
+                        .Select(l => (IList<XYZ>)l.Select(p => transformacion.OfPoint(CreadorEje.APies(p))).ToList())
+                        .ToList();
+                    constructor.AddFace(new TessellatedFace(lazos, material));
+                }
+
+                constructor.CloseConnectedFaceSet();
+            }
+
+            constructor.Build();
+            return constructor.GetBuildResult();
         }
 
         //Tableros de puente si la version de Revit lo admite para DirectShape; si no, Modelo generico

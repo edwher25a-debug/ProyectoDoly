@@ -54,14 +54,17 @@ namespace ProyectoDoly.Puentes.Superestructura
             return dentro;
         }
 
-        //Quita el punto de cierre repetido, puntos duplicados y puntos alineados
+        //Quita el punto de cierre repetido, puntos casi duplicados y puntos alineados.
+        //Revit une vertices a menos de ~0.8 mm y falla con bordes mas cortos: se exigen 2 mm entre puntos
+        private const double DistanciaMinima = 0.002;
+
         private static List<Punto2> Limpiar(IEnumerable<Punto2> puntos)
         {
             const double tolerancia = 1e-6;
             List<Punto2> lista = new List<Punto2>();
             foreach (Punto2 p in puntos)
-                if (lista.Count == 0 || p.Distancia(lista[lista.Count - 1]) > tolerancia) lista.Add(p);
-            while (lista.Count > 1 && lista[0].Distancia(lista[lista.Count - 1]) <= tolerancia) lista.RemoveAt(lista.Count - 1);
+                if (lista.Count == 0 || p.Distancia(lista[lista.Count - 1]) > DistanciaMinima) lista.Add(p);
+            while (lista.Count > 1 && lista[0].Distancia(lista[lista.Count - 1]) <= DistanciaMinima) lista.RemoveAt(lista.Count - 1);
 
             bool cambio = true;
             while (cambio && lista.Count > 3)

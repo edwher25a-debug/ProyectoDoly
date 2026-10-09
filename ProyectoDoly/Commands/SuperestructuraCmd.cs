@@ -2,6 +2,7 @@ using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using ProyectoDoly.Puentes;
+using ProyectoDoly.Utils;
 using ProyectoDoly.ViewModels;
 using ProyectoDoly.Views;
 
@@ -23,26 +24,30 @@ namespace ProyectoDoly.Commands
                 return Result.Cancelled;
             }
 
-            List<EjeGuardado> ejes = DatosEje.Ejes(doc);
-            if (ejes.Count == 0)
-            {
-                TaskDialog.Show("Superestructura",
-                    "No hay ejes en el modelo.\n\nImporte el eje con el botón Importar eje. " +
-                    "Los ejes importados con una versión anterior de ProyectoDoly deben importarse de nuevo.");
-                return Result.Cancelled;
-            }
-
-            //Si el usuario ya tenia un eje seleccionado, se propone ese
-            ElementId? seleccionado = uidoc.Selection.GetElementIds().FirstOrDefault(id => ejes.Any(e => e.Id == id));
-
-            vm_Superestructura viewModel = new vm_Superestructura(doc, ejes, seleccionado);
-            v_Superestructura view = new v_Superestructura { DataContext = viewModel };
-            viewModel.Cerrar = aceptado => view.DialogResult = aceptado;
-
-            if (view.ShowDialog() != true || viewModel.Opciones == null) return Result.Cancelled;
-
+            //Paso en curso, para decir donde fallo si Revit lanza un error inesperado
+            string paso = "leer los ejes del modelo";
             try
             {
+                List<EjeGuardado> ejes = DatosEje.Ejes(doc);
+                if (ejes.Count == 0)
+                {
+                    TaskDialog.Show("Superestructura",
+                        "No hay ejes en el modelo.\n\nImporte el eje con el botón Importar eje. " +
+                        "Los ejes importados con una versión anterior de ProyectoDoly deben importarse de nuevo.");
+                    return Result.Cancelled;
+                }
+
+                //Si el usuario ya tenia un eje seleccionado, se propone ese
+                ElementId? seleccionado = uidoc.Selection.GetElementIds().FirstOrDefault(id => ejes.Any(e => e.Id == id));
+
+                paso = "abrir la ventana y leer la sección de la familia";
+                vm_Superestructura viewModel = new vm_Superestructura(doc, ejes, seleccionado);
+                v_Superestructura view = new v_Superestructura { DataContext = viewModel };
+                viewModel.Cerrar = aceptado => view.DialogResult = aceptado;
+
+                if (view.ShowDialog() != true || viewModel.Opciones == null) return Result.Cancelled;
+
+                paso = "crear el tablero en el modelo";
                 ResultadoSuperestructura resultado = CreadorSuperestructura.Crear(doc, viewModel.Opciones);
                 uidoc.Selection.SetElementIds(new List<ElementId> { resultado.Id });
                 TaskDialog.Show("Superestructura", resultado.Resumen);
@@ -52,6 +57,11 @@ namespace ProyectoDoly.Commands
             {
                 //Errores esperados (geometria no valida, tramo fuera del eje): se explican al usuario
                 TaskDialog.Show("Superestructura", ex.Message);
+                return Result.Cancelled;
+            }
+            catch (Exception ex)
+            {
+                Diagnostico.MostrarError("Superestructura", paso, ex);
                 return Result.Cancelled;
             }
         }
