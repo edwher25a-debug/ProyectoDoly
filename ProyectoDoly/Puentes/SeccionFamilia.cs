@@ -230,7 +230,7 @@ namespace ProyectoDoly.Puentes
 
         private static long Valor(ElementId id) => id.Value;
 
-        private sealed class SobrescribirFamilia : IFamilyLoadOptions
+        internal sealed class SobrescribirFamilia : IFamilyLoadOptions
         {
             public bool OnFamilyFound(bool familyInUse, out bool overwriteParameterValues)
             {

@@ -48,7 +48,9 @@ namespace ProyectoDoly.Commands
                 if (view.ShowDialog() != true || viewModel.Opciones == null) return Result.Cancelled;
 
                 paso = "crear el tablero en el modelo";
-                ResultadoSuperestructura resultado = CreadorSuperestructura.Crear(doc, viewModel.Opciones);
+                ResultadoSuperestructura resultado = viewModel.Opciones.FamiliaAdaptativa
+                    ? FamiliaTablero.Crear(doc, viewModel.Opciones)
+                    : CreadorSuperestructura.Crear(doc, viewModel.Opciones);
                 uidoc.Selection.SetElementIds(new List<ElementId> { resultado.Id });
                 TaskDialog.Show("Superestructura", resultado.Resumen);
                 return Result.Succeeded;

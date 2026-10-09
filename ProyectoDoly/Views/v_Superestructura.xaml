@@ -1,7 +1,7 @@
 <Window x:Class="ProyectoDoly.Views.v_Superestructura"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Superestructura" Width="880" Height="640" MinWidth="780" MinHeight="580"
+        Title="Superestructura" Width="880" Height="760" MinWidth="780" MinHeight="680"
         WindowStartupLocation="CenterScreen" ResizeMode="CanResizeWithGrip"
         Background="{DynamicResource Fondo}" Foreground="{DynamicResource Texto}">
     <Window.Resources>
@@ -91,6 +91,15 @@
                         <TextBlock Grid.Row="2" Grid.Column="3" Text="Subir (m)  " VerticalAlignment="Center" ToolTip="Negativo = bajar la sección respecto a la rasante (por ejemplo, el espesor del pavimento)."/>
                         <TextBox Grid.Row="2" Grid.Column="4" Text="{Binding DesplazamientoVertical, UpdateSourceTrigger=PropertyChanged}"/>
                     </Grid>
+                </GroupBox>
+
+                <GroupBox Header="4  ·  Cómo se crea">
+                    <StackPanel>
+                        <RadioButton IsChecked="{Binding FamiliaAdaptativa}" Content="Familia adaptativa (como SOFiSTiK)"/>
+                        <TextBlock Style="{StaticResource Ayuda}" Text="Un ejemplar por tramo con la sección en sus puntos adaptativos y una solevación sólida. Se puede editar, tiene material y queda agrupado."/>
+                        <RadioButton IsChecked="{Binding SolidoDirecto}" Content="Sólido directo (DirectShape)"/>
+                        <TextBlock Style="{StaticResource Ayuda}" Text="Un solo elemento, más rápido, pero no editable."/>
+                    </StackPanel>
                 </GroupBox>
             </StackPanel>
 

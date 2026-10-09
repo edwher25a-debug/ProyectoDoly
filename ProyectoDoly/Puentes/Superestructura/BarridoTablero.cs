@@ -121,6 +121,17 @@ namespace ProyectoDoly.Puentes.Superestructura
             return solidos;
         }
 
+        /// <summary>
+        ///     Puntos de la seccion en cada estacion, para colocar un ejemplar adaptativo por tramo:
+        ///     resultado[estacion] = vertices de todas las piezas y contornos, siempre en el mismo orden
+        ///     (pieza 1 exterior, pieza 1 huecos, pieza 2 exterior...). Un tramo usa las estaciones k y k + 1.
+        /// </summary>
+        public static List<Punto3[]> PuntosPorEstacion(Eje eje, SeccionTransversal seccion, OpcionesBarrido opciones) =>
+            Estaciones(eje, opciones)
+                .Select(eje.Evaluar)
+                .Select(p => seccion.Piezas.SelectMany(pieza => pieza.Contornos).SelectMany(c => Ubicar(c, p, opciones)).ToArray())
+                .ToList();
+
         //Volumen por el teorema de la divergencia (para comprobar la malla)
         public static double Volumen(SolidoBarrido solido)
         {

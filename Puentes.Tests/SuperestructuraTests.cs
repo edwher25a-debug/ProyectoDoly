@@ -124,6 +124,26 @@ namespace ProyectoDoly.Puentes.Tests
         }
 
         [Fact]
+        public void Puntos_adaptativos_mismo_orden_en_cada_estacion()
+        {
+            SeccionTransversal cajon = Cajon();
+            OpcionesBarrido opciones = new OpcionesBarrido { EstacionInicial = 0, EstacionFinal = 20, Paso = 5 };
+
+            List<Punto3[]> estaciones = BarridoTablero.PuntosPorEstacion(EjeRecto(20), cajon, opciones);
+
+            Assert.Equal(BarridoTablero.Estaciones(EjeRecto(20), opciones).Count, estaciones.Count);
+            int vertices = cajon.Piezas.Sum(p => p.Contornos.Sum(c => c.Puntos.Count));
+            Assert.All(estaciones, e => Assert.Equal(vertices, e.Length));
+
+            //En recta, cada vertice avanza exactamente el paso entre una estacion y la siguiente
+            for (int j = 0; j < vertices; j++)
+            {
+                Punto3 a = estaciones[0][j], b = estaciones[1][j];
+                Assert.Equal(5, Math.Sqrt(Math.Pow(b.X - a.X, 2) + Math.Pow(b.Y - a.Y, 2) + Math.Pow(b.Z - a.Z, 2)), 9);
+            }
+        }
+
+        [Fact]
         public void Volumen_en_recta_es_area_por_longitud_y_la_malla_mira_hacia_afuera()
         {
             Eje eje = EjeRecto(50);

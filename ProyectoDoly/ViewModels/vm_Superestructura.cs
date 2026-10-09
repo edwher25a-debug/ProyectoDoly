@@ -117,7 +117,7 @@ namespace ProyectoDoly.ViewModels
             }
         }
 
-        private string paso = "1";
+        private string paso = "2";
         public string Paso
         {
             get => paso;
@@ -145,6 +145,23 @@ namespace ProyectoDoly.ViewModels
             {
                 if (SetProperty(ref desplazamientoVertical, value)) Actualizar();
             }
+        }
+
+        //4_Como se crea el tablero
+        private bool familiaAdaptativa = true;
+        public bool FamiliaAdaptativa
+        {
+            get => familiaAdaptativa;
+            set
+            {
+                if (SetProperty(ref familiaAdaptativa, value)) OnPropertyChanged(nameof(SolidoDirecto));
+            }
+        }
+
+        public bool SolidoDirecto
+        {
+            get => !familiaAdaptativa;
+            set => FamiliaAdaptativa = !value;
         }
 
         //Vista previa
@@ -303,6 +320,7 @@ namespace ProyectoDoly.ViewModels
             listo = new OpcionesSuperestructura
             {
                 Eje = eje,
+                FamiliaAdaptativa = FamiliaAdaptativa,
                 Seccion = seccion,
                 Barrido = new OpcionesBarrido
                 {
@@ -318,6 +336,7 @@ namespace ProyectoDoly.ViewModels
         private void Crear()
         {
             if (listo == null) return;
+            listo.FamiliaAdaptativa = FamiliaAdaptativa;
             Opciones = listo;
             Cerrar?.Invoke(true);
         }
