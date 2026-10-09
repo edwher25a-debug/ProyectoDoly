@@ -1,0 +1,28 @@
+<UserControl x:Class="ProyectoNice.Views.v_TrabajoFinal"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <DockPanel>
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button Command="{Binding AceptarBT}">Generar codigos</Button>
+        </StackPanel>
+        <StackPanel>
+            <GroupBox Header="Datos de entrada">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="180"/>
+                        <ColumnDefinition Width="240"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+                    <TextBlock VerticalAlignment="Center">Categoria</TextBlock>
+                    <TextBlock VerticalAlignment="Center" Grid.Row="1">Codigo de proyecto</TextBlock>
+
+                    <ComboBox Grid.Column="1" ItemsSource="{Binding ListaCagoriasCB}" SelectedItem="{Binding CategoriasSeleccCB}" DisplayMemberPath="Name"/>
+                    <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding CodigoProyect}"/>
+                </Grid>
+            </GroupBox>
+        </StackPanel>
+    </DockPanel>
+</UserControl>
