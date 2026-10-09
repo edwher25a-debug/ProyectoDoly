@@ -8,4 +8,18 @@
         <RootNamespace>Doly.Core</RootNamespace>
     </PropertyGroup>
 
+    <!--Mismas configuraciones que el add-in para que la solucion las encuentre en todos los proyectos-->
+    <PropertyGroup>
+        <Configurations>Debug;Release;Debug R24;Release R24</Configurations>
+    </PropertyGroup>
+    <PropertyGroup Condition="$(Configuration.Contains('Debug'))">
+        <DefineConstants>$(DefineConstants);DEBUG;TRACE</DefineConstants>
+        <Optimize>false</Optimize>
+    </PropertyGroup>
+    <PropertyGroup Condition="$(Configuration.Contains('Release'))">
+        <DefineConstants>$(DefineConstants);TRACE</DefineConstants>
+        <Optimize>true</Optimize>
+    </PropertyGroup>
+
+
 </Project>

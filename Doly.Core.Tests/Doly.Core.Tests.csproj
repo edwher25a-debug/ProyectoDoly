@@ -7,6 +7,20 @@
         <IsPackable>false</IsPackable>
     </PropertyGroup>
 
+    <!--Mismas configuraciones que el add-in para que la solucion las encuentre en todos los proyectos-->
+    <PropertyGroup>
+        <Configurations>Debug;Release;Debug R24;Release R24</Configurations>
+    </PropertyGroup>
+    <PropertyGroup Condition="$(Configuration.Contains('Debug'))">
+        <DefineConstants>$(DefineConstants);DEBUG;TRACE</DefineConstants>
+        <Optimize>false</Optimize>
+    </PropertyGroup>
+    <PropertyGroup Condition="$(Configuration.Contains('Release'))">
+        <DefineConstants>$(DefineConstants);TRACE</DefineConstants>
+        <Optimize>true</Optimize>
+    </PropertyGroup>
+
+
     <ItemGroup>
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
         <PackageReference Include="xunit" Version="2.9.2" />
