@@ -14,9 +14,9 @@
     </ItemGroup>
 
     <ItemGroup>
-        <!--El motor del eje no depende de Revit: se compila aqui directamente desde ProyectoNice-->
-        <Compile Include="..\ProyectoNice\Puentes\Ejes\*.cs" Link="Puentes\Ejes\%(Filename)%(Extension)" />
-        <Compile Include="..\ProyectoNice\Puentes\LandXml\*.cs" Link="Puentes\LandXml\%(Filename)%(Extension)" />
+        <!--El motor del eje no depende de Revit: se compila aqui directamente desde ProyectoDoly-->
+        <Compile Include="..\ProyectoDoly\Puentes\Ejes\*.cs" Link="Puentes\Ejes\%(Filename)%(Extension)" />
+        <Compile Include="..\ProyectoDoly\Puentes\LandXml\*.cs" Link="Puentes\LandXml\%(Filename)%(Extension)" />
     </ItemGroup>
 
     <ItemGroup>
