@@ -33,6 +33,9 @@ namespace ProyectoDoly.Puentes.Superestructura
         //Desplazamiento de la seccion respecto al eje: + derecha, + arriba (m)
         public double DesplazamientoLateral { get; set; }
         public double DesplazamientoVertical { get; set; }
+
+        //Estaciones donde tambien debe haber seccion (por ejemplo, los puntos de los parametros variables)
+        public List<double> EstacionesExtra { get; set; } = new List<double>();
     }
 
     /// <summary>
@@ -53,7 +56,7 @@ namespace ProyectoDoly.Puentes.Superestructura
             if (opciones.Paso <= 0) throw new ArgumentException("El paso entre secciones debe ser mayor que cero.");
 
             List<double> estaciones = new List<double> { desde };
-            foreach (double e in eje.Estaciones(opciones.Paso))
+            foreach (double e in eje.Estaciones(opciones.Paso).Concat(opciones.EstacionesExtra).OrderBy(e => e))
             {
                 if (e <= desde || e >= hasta) continue;
                 if (e - estaciones[estaciones.Count - 1] < SeparacionMinima) continue;
@@ -77,18 +80,27 @@ namespace ProyectoDoly.Puentes.Superestructura
             return resultado;
         }
 
-        public static List<SolidoBarrido> Generar(Eje eje, SeccionTransversal seccion, OpcionesBarrido opciones)
+        public static List<SolidoBarrido> Generar(Eje eje, SeccionTransversal seccion, OpcionesBarrido opciones) =>
+            Generar(eje, Estaciones(eje, opciones).Select(_ => seccion).ToList(), opciones);
+
+        /// <summary>
+        ///     Barrido con una seccion por estacion (parametros variables). Las secciones deben tener la misma forma
+        ///     (piezas, huecos y vertices en el mismo orden, ver SeccionVariable.Alinear).
+        /// </summary>
+        public static List<SolidoBarrido> Generar(Eje eje, IReadOnlyList<SeccionTransversal> porEstacion, OpcionesBarrido opciones)
         {
             List<PuntoEje> secciones = Estaciones(eje, opciones).Select(eje.Evaluar).ToList();
+            ComprobarCantidad(secciones.Count, porEstacion);
             List<SolidoBarrido> solidos = new List<SolidoBarrido>();
 
-            foreach (Pieza pieza in seccion.Piezas)
+            for (int indice = 0; indice < porEstacion[0].Piezas.Count; indice++)
             {
                 SolidoBarrido solido = new SolidoBarrido();
+                int contornos = porEstacion[0].Piezas[indice].Contornos.Count();
 
                 //Cada contorno en cada estacion: anillos[contorno][estacion][vertice]
-                List<List<Punto3[]>> anillos = pieza.Contornos
-                    .Select(c => secciones.Select(p => Ubicar(c, p, opciones)).ToList())
+                List<List<Punto3[]>> anillos = Enumerable.Range(0, contornos)
+                    .Select(c => secciones.Select((p, e) => Ubicar(porEstacion[e].Piezas[indice].Contornos.ElementAt(c), p, opciones)).ToList())
                     .ToList();
 
                 //01_Caras laterales: dos triangulos por borde y tramo, normal hacia afuera
@@ -109,11 +121,10 @@ namespace ProyectoDoly.Puentes.Superestructura
 
                 //02_Tapas en triangulos: al inicio la seccion mira hacia atras, al final hacia adelante
                 int ultima = secciones.Count - 1;
-                foreach ((RefVertice a, RefVertice b, RefVertice c) in Triangulacion.Triangular(pieza))
-                {
+                foreach ((RefVertice a, RefVertice b, RefVertice c) in Triangulacion.Triangular(porEstacion[0].Piezas[indice]))
                     solido.Caras.Add(Triangulo(Punto(anillos, a, 0), Punto(anillos, b, 0), Punto(anillos, c, 0)));
+                foreach ((RefVertice a, RefVertice b, RefVertice c) in Triangulacion.Triangular(porEstacion[ultima].Piezas[indice]))
                     solido.Caras.Add(Triangulo(Punto(anillos, a, ultima), Punto(anillos, c, ultima), Punto(anillos, b, ultima)));
-                }
 
                 solidos.Add(solido);
             }
@@ -127,10 +138,22 @@ namespace ProyectoDoly.Puentes.Superestructura
         ///     (pieza 1 exterior, pieza 1 huecos, pieza 2 exterior...). Un tramo usa las estaciones k y k + 1.
         /// </summary>
         public static List<Punto3[]> PuntosPorEstacion(Eje eje, SeccionTransversal seccion, OpcionesBarrido opciones) =>
-            Estaciones(eje, opciones)
-                .Select(eje.Evaluar)
-                .Select(p => seccion.Piezas.SelectMany(pieza => pieza.Contornos).SelectMany(c => Ubicar(c, p, opciones)).ToArray())
+            PuntosPorEstacion(eje, Estaciones(eje, opciones).Select(_ => seccion).ToList(), opciones);
+
+        public static List<Punto3[]> PuntosPorEstacion(Eje eje, IReadOnlyList<SeccionTransversal> porEstacion, OpcionesBarrido opciones)
+        {
+            List<PuntoEje> secciones = Estaciones(eje, opciones).Select(eje.Evaluar).ToList();
+            ComprobarCantidad(secciones.Count, porEstacion);
+            return secciones
+                .Select((p, e) => porEstacion[e].Piezas.SelectMany(pieza => pieza.Contornos).SelectMany(c => Ubicar(c, p, opciones)).ToArray())
                 .ToList();
+        }
+
+        private static void ComprobarCantidad(int estaciones, IReadOnlyList<SeccionTransversal> porEstacion)
+        {
+            if (porEstacion.Count != estaciones)
+                throw new ArgumentException($"Hay {porEstacion.Count} secciones para {estaciones} estaciones.", nameof(porEstacion));
+        }
 
         //Volumen por el teorema de la divergencia (para comprobar la malla)
         public static double Volumen(SolidoBarrido solido)

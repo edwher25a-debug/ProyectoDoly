@@ -12,6 +12,29 @@ namespace ProyectoDoly.Puentes
 
         //true: familia adaptativa editable (un ejemplar por tramo); false: un solo solido directo (DirectShape)
         public bool FamiliaAdaptativa { get; set; } = true;
+
+        //Parametros de la familia que cambian a lo largo del tablero y la seccion resultante en cada estacion del barrido
+        //(null = la misma seccion en todo el tramo)
+        public List<Variable> Variables { get; set; } = new List<Variable>();
+        public List<SeccionTransversal>? PorEstacion { get; set; }
+
+        public List<double> Estaciones() => BarridoTablero.Estaciones(Eje.Eje, Barrido);
+
+        public IReadOnlyList<SeccionTransversal> Secciones() => PorEstacion ?? Estaciones().Select(_ => Seccion).ToList();
+
+        //Volumen por areas medias entre estaciones
+        public double VolumenAproximado()
+        {
+            List<double> estaciones = Estaciones();
+            IReadOnlyList<SeccionTransversal> secciones = Secciones();
+            double volumen = 0;
+            for (int i = 0; i < estaciones.Count - 1; i++)
+                volumen += (secciones[i].Area + secciones[i + 1].Area) / 2 * (estaciones[i + 1] - estaciones[i]);
+            return volumen;
+        }
+
+        public string TextoVariables =>
+            Variables.Count == 0 ? "" : "\nParámetros variables: " + string.Join(", ", Variables.Select(v => v.Nombre));
     }
 
     public sealed class ResultadoSuperestructura
@@ -29,8 +52,8 @@ namespace ProyectoDoly.Puentes
         {
             Eje eje = opciones.Eje.Eje;
             Transform transformacion = opciones.Eje.Transformacion;
-            List<SolidoBarrido> solidos = BarridoTablero.Generar(eje, opciones.Seccion, opciones.Barrido);
-            int secciones = BarridoTablero.Estaciones(eje, opciones.Barrido).Count;
+            List<SolidoBarrido> solidos = BarridoTablero.Generar(eje, opciones.Secciones(), opciones.Barrido);
+            int secciones = opciones.Estaciones().Count;
 
             //La seccion queda escrita en un archivo para poder revisarla si Revit no acepta la geometria
             string archivoSeccion = GuardarSeccion(opciones);
@@ -82,7 +105,7 @@ namespace ProyectoDoly.Puentes
                     Resumen = $"Tablero creado sobre el eje \"{eje.Nombre}\".\n\n" +
                               $"Sección: {opciones.Seccion.Nombre}\n" +
                               $"Desde {Eje.FormatoEstacion(opciones.Barrido.EstacionInicial)} hasta {Eje.FormatoEstacion(opciones.Barrido.EstacionFinal)} ({longitud:F2} m)\n" +
-                              $"Secciones: {secciones}, piezas: {solidos.Count}\n" +
+                              $"Secciones: {secciones}, piezas: {solidos.Count}{opciones.TextoVariables}\n" +
                               $"Volumen aproximado: {solidos.Sum(BarridoTablero.Volumen):F2} m³\n" +
                               $"Geometría: {tipoGeometria}" +
                               (fallidas.Count > 0 ? $"\n\nNo se pudieron crear:\n{string.Join("\n", fallidas)}\nSección guardada en {archivoSeccion}" : "")

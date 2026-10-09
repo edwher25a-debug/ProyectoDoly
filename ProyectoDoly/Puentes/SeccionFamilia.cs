@@ -42,34 +42,19 @@ namespace ProyectoDoly.Puentes
 
         public static SeccionTransversal Leer(Document doc, FamilySymbol tipo)
         {
-            Document familia = doc.EditFamily(tipo.Family);
-            try
-            {
-                //La geometria depende del tipo: se activa el tipo elegido en la copia de la familia
-                FamilyType? tipoFamilia = familia.FamilyManager.Types.Cast<FamilyType>().FirstOrDefault(t => t.Name == tipo.Name);
-                if (tipoFamilia != null)
-                {
-                    using (Transaction transaccion = new Transaction(familia, "Tipo de sección"))
-                    {
-                        transaccion.Start();
-                        familia.FamilyManager.CurrentType = tipoFamilia;
-                        transaccion.Commit();
-                    }
-                }
+            using (LectorSeccion lector = new LectorSeccion(doc, tipo)) return lector.Leer(new Dictionary<string, double>());
+        }
 
-                string nombre = $"{tipo.Family.Name} : {tipo.Name}";
-                List<Solid> solidos = Solidos(familia);
-                if (solidos.Count > 0) return DesdeSolidos(nombre, solidos);
+        //Seccion con la geometria actual de la familia abierta
+        internal static SeccionTransversal LeerGeometria(Document familia, string nombre)
+        {
+            List<Solid> solidos = Solidos(familia);
+            if (solidos.Count > 0) return DesdeSolidos(nombre, solidos);
 
-                List<Curve> curvas = Curvas(familia);
-                if (curvas.Count > 0) return DesdeCurvas(nombre, curvas);
+            List<Curve> curvas = Curvas(familia);
+            if (curvas.Count > 0) return DesdeCurvas(nombre, curvas);
 
-                throw new InvalidOperationException($"La familia {tipo.Family.Name} no tiene sólidos ni líneas cerradas para usar como sección.");
-            }
-            finally
-            {
-                familia.Close(false);
-            }
+            throw new InvalidOperationException($"La familia {nombre} no tiene sólidos ni líneas cerradas para usar como sección.");
         }
 
         //01_Solidos: cara del lado menor en el eje donde la familia es mas delgada (una extrusion fina de la seccion)
