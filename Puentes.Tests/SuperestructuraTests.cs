@@ -296,5 +296,30 @@ namespace ProyectoDoly.Puentes.Tests
             Assert.Equal(estaciones.Count, BarridoTablero.PuntosPorEstacion(eje, secciones, opciones).Count);
             Assert.Throws<ArgumentException>(() => BarridoTablero.Generar(eje, secciones.Skip(1).ToList(), opciones));
         }
+
+        [Fact]
+        public void Eje_se_divide_solo_en_sus_tramos_reales()
+        {
+            //Recta sin rasante: una sola linea, sin puntos intermedios
+            TramoEje recta = Assert.Single(TramosEje.Calcular(EjeRecto(250)));
+            Assert.True(recta.EsLinea);
+            Assert.Equal(2, recta.Estaciones.Count);
+
+            //Recta + arco de 40 m: la recta es linea y el arco una curva con puntos cada metro como mucho
+            ElementoHorizontal r = new ElementoHorizontal(TipoElemento.Recta, new Punto2(0, 0), 0, 30, 0, 0);
+            ElementoHorizontal a = new ElementoHorizontal(TipoElemento.Arco, r.Fin, r.RumboFin, 40, 0.01, 0.01);
+            Eje mixto = new Eje("Mixto", new AlineamientoHorizontal(new[] { r, a }, 0), null);
+            List<TramoEje> tramos = TramosEje.Calcular(mixto);
+            Assert.Equal(2, tramos.Count);
+            Assert.True(tramos[0].EsLinea);
+            Assert.False(tramos[1].EsLinea);
+            Assert.Equal(30, tramos[1].Desde, 9);
+            Assert.True(tramos[1].Estaciones.Zip(tramos[1].Estaciones.Skip(1), (x, y) => y - x).Max() <= 1 + 1e-9);
+
+            //Recta con curva vertical en el medio: lineas antes y despues, curva en la curva vertical
+            PerfilVertical rasante = new PerfilVertical("R", new[] { new PuntoVertical(0, 10), new PuntoVertical(100, 12, 40), new PuntoVertical(200, 10) });
+            List<TramoEje> conCurva = TramosEje.Calcular(EjeRecto(200, rasante));
+            Assert.Equal(new[] { true, false, false, true }, conCurva.Select(x => x.EsLinea).ToArray());
+        }
     }
 }

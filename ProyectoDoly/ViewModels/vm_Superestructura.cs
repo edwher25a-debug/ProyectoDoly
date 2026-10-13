@@ -403,7 +403,8 @@ namespace ProyectoDoly.ViewModels
             Resumen = (variables.Count > 0 ? $"En {Eje.FormatoEstacion(estacion)}:\n" : "") +
                       $"Ancho: {seccion.MaxX - seccion.MinX:F3} m  ·  Canto: {seccion.MaxY - seccion.MinY:F3} m\n" +
                       $"Área: {seccion.Area:F3} m²  ·  Piezas: {seccion.Piezas.Count}" +
-                      (seccion.Piezas.Any(p => p.Huecos.Count > 0) ? $", huecos: {seccion.Piezas.Sum(p => p.Huecos.Count)}" : "");
+                      (seccion.Piezas.Any(p => p.Huecos.Count > 0) ? $", huecos: {seccion.Piezas.Sum(p => p.Huecos.Count)}" : "") +
+                      (lector.PorPuntoAdaptativo ? "\nInserción en el eje: punto adaptativo 1 de la familia" : "\nInserción en el eje: origen de la familia (no es adaptativa)");
             return seccion;
         }
 

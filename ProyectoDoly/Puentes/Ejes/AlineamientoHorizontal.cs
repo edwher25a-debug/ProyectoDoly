@@ -42,6 +42,8 @@ namespace ProyectoDoly.Puentes.Ejes
             return elemento.PuntoEn(s);
         }
 
+        public TipoElemento TipoEn(double estacion) => Localizar(estacion).elemento.Tipo;
+
         public double RumboEn(double estacion)
         {
             (ElementoHorizontal elemento, double s) = Localizar(estacion);

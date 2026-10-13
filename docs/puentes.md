@@ -32,6 +32,13 @@ Archivo de prueba: `Puentes.Tests/Datos/eje_prueba.xml`.
    parámetro de material. Se coloca un ejemplar por tramo y todos quedan en un grupo.
 5. El tablero se crea como un sólido con secciones verticales, perpendiculares al eje en planta y a la cota de la rasante.
 
+El eje se dibuja continuo: una línea por cada recta con pendiente constante y una curva suave (spline con las tangentes
+del eje) por cada curva, clotoide o curva vertical, sin partirlo cada pocos metros (`Puentes/Ejes/TramosEje.cs`).
+
+**Inserción de la sección:** como en los perfiles de SOFiSTiK (Modelo genérico adaptativo), la sección se ubica en el eje
+por el **punto adaptativo 1** de la familia, no por su origen. Si la familia no es adaptativa, se usa su origen.
+Una sección dibujada en el plano Centro (izquierda/derecha) se mira con X en el sentido del eje (derecha = -Y).
+
 La sección se lee de la familia así: si tiene sólidos, se toma la cara plana del lado donde la familia es más delgada
-(una extrusión fina dibujada de frente); si no, las líneas cerradas. El origen de la familia es el punto del eje sobre la rasante,
+(una extrusión fina dibujada de frente); si no, las líneas cerradas. El punto de inserción (punto adaptativo 1, u origen) es el punto del eje sobre la rasante,
 X hacia la derecha mirando en el sentido del eje y Z hacia arriba. *Reflejar* invierte izquierda y derecha.

@@ -88,15 +88,6 @@ namespace ProyectoDoly.ViewModels
             set => UbicarCompartidas = !value;
         }
 
-        private string paso = "2";
-        public string Paso
-        {
-            get => paso;
-            set
-            {
-                if (SetProperty(ref paso, value)) Actualizar();
-            }
-        }
 
         private string marcasCada = "20";
         public string MarcasCada
@@ -236,9 +227,7 @@ namespace ProyectoDoly.ViewModels
                 ? $"Rasante: cota {cotaMin:F2} a {cotaMax:F2} m · {eje.Vertical.Puntos.Count} PIV"
                 : "Sin rasante: el eje se dibuja a cota 0";
 
-            if (!LeerNumero(Paso, out double pasoValor) || pasoValor <= 0)
-                MostrarError("El paso de dibujo debe ser un número mayor que 0.");
-            else if (!LeerNumero(MarcasCada, out double marcasValor) || marcasValor < 0)
+            if (!LeerNumero(MarcasCada, out double marcasValor) || marcasValor < 0)
                 MostrarError("Las marcas de estación deben ser un número (0 = sin marcas).");
             else
                 ejeActual = eje;
@@ -251,13 +240,11 @@ namespace ProyectoDoly.ViewModels
         {
             if (ejeActual == null) return;
 
-            LeerNumero(Paso, out double pasoValor);
             LeerNumero(MarcasCada, out double marcasValor);
             Opciones = new OpcionesEje
             {
                 Eje = ejeActual,
                 Ubicacion = UbicarCompartidas ? Ubicacion.Compartidas : Ubicacion.Origen,
-                Paso = pasoValor,
                 MarcasCada = marcasValor,
                 Archivo = RutaArchivo
             };

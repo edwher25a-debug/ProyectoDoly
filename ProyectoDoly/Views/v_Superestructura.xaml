@@ -59,7 +59,7 @@
                             <Button DockPanel.Dock="Right" Content="Cargar familia…" Command="{Binding CargarFamiliaBT}"/>
                             <ComboBox ItemsSource="{Binding Tipos}" SelectedItem="{Binding TipoSelecc}"/>
                         </DockPanel>
-                        <TextBlock Style="{StaticResource Ayuda}" Margin="0,2,0,6" Text="Familia de Modelo genérico o Perfil con la sección dibujada de frente. El origen de la familia es el punto del eje sobre la rasante."/>
+                        <TextBlock Style="{StaticResource Ayuda}" Margin="0,2,0,6" Text="Familia de Modelo genérico adaptativo (como los perfiles de SOFiSTiK), Modelo genérico o Perfil. Se inserta en el eje por su punto adaptativo 1; si la familia no es adaptativa, por su origen."/>
                         <CheckBox IsChecked="{Binding Espejo}" Content="Reflejar la sección (izquierda ↔ derecha)"/>
                     </StackPanel>
                 </GroupBox>

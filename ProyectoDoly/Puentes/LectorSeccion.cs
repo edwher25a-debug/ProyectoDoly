@@ -77,6 +77,9 @@ namespace ProyectoDoly.Puentes
 
         public List<ParametroSeccion> Parametros { get; } = new List<ParametroSeccion>();
 
+        //true: la seccion se ubica en el eje por el punto adaptativo de la familia; false: por su origen
+        public bool PorPuntoAdaptativo { get; private set; }
+
         /// <summary>
         ///     Seccion con los valores dados (nombre del parametro -> valor en m, grados o numero).
         ///     Los parametros que no se dan quedan con el valor del tipo.
@@ -110,7 +113,8 @@ namespace ProyectoDoly.Puentes
                     }
 
                     familia.Regenerate();
-                    seccion = SeccionFamilia.LeerGeometria(familia, nombre);
+                    seccion = SeccionFamilia.LeerGeometria(familia, nombre, out bool adaptativo);
+                    PorPuntoAdaptativo = adaptativo;
                 }
                 catch (Autodesk.Revit.Exceptions.ApplicationException ex)
                 {
