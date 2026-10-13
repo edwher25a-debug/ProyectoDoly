@@ -85,10 +85,8 @@
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="70"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Text="Paso de dibujo (m)  " VerticalAlignment="Center" ToolTip="Distancia entre puntos de la polilínea 3D. Menor = más preciso en curvas."/>
-                            <TextBox Grid.Column="1" Text="{Binding Paso, UpdateSourceTrigger=PropertyChanged}"/>
-                            <TextBlock Grid.Column="3" Text="Marcas cada (m)  " VerticalAlignment="Center" ToolTip="Marcas perpendiculares al eje. Cada 100 m la marca es más larga. 0 = sin marcas."/>
-                            <TextBox Grid.Column="4" Text="{Binding MarcasCada, UpdateSourceTrigger=PropertyChanged}"/>
+                            <TextBlock Text="Marcas cada (m)  " VerticalAlignment="Center" ToolTip="Marcas perpendiculares al eje. Cada 100 m la marca es más larga. 0 = sin marcas."/>
+                            <TextBox Grid.Column="1" Text="{Binding MarcasCada, UpdateSourceTrigger=PropertyChanged}"/>
                         </Grid>
                     </StackPanel>
                 </GroupBox>

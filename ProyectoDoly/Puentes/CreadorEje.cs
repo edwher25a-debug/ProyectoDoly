@@ -16,7 +16,6 @@ namespace ProyectoDoly.Puentes
     {
         public Eje Eje { get; set; } = null!;
         public Ubicacion Ubicacion { get; set; } = Ubicacion.Compartidas;
-        public double Paso { get; set; } = 2;
         public double MarcasCada { get; set; } = 20;
         public string Archivo { get; set; } = "";
     }
@@ -45,22 +44,43 @@ namespace ProyectoDoly.Puentes
             Transform transformacion = Transformacion(doc, opciones);
             double tolerancia = doc.Application.ShortCurveTolerance;
 
-            //01_Polilinea del eje
-            List<XYZ> puntos = eje.Muestrear(opciones.Paso)
-                .Select(p => transformacion.OfPoint(APies(p.Posicion)))
-                .ToList();
+            //01_Eje continuo: una linea por recta con pendiente constante y una curva suave por cada curva, clotoide
+            //o curva vertical (sin partirlo cada pocos metros)
+            List<TramoEje> tramos = TramosEje.Calcular(eje);
+            ValidarDistancia(tramos.SelectMany(t => t.Estaciones).Select(e => transformacion.OfPoint(APies(eje.Evaluar(e).Posicion))).ToList(),
+                opciones.Ubicacion);
 
-            ValidarDistancia(puntos, opciones.Ubicacion);
-
+            //Geometria con curvas suaves y, por si Revit no las acepta, la misma con segmentos cortos
             List<GeometryObject> geometria = new List<GeometryObject>();
-            XYZ anterior = puntos[0];
-            for (int i = 1; i < puntos.Count; i++)
+            List<GeometryObject> segmentos = new List<GeometryObject>();
+            int curvas = 0, lineas = 0;
+            foreach (TramoEje tramo in tramos)
             {
-                //Puntos mas cercanos que la tolerancia de Revit no forman linea valida
-                if (puntos[i].DistanceTo(anterior) < tolerancia) continue;
+                List<XYZ> puntos = tramo.Estaciones.Select(e => transformacion.OfPoint(APies(eje.Evaluar(e).Posicion))).ToList();
+                if (puntos[0].DistanceTo(puntos[puntos.Count - 1]) < tolerancia) continue;
 
-                geometria.Add(Line.CreateBound(anterior, puntos[i]));
-                anterior = puntos[i];
+                if (tramo.EsLinea)
+                {
+                    Line linea = Line.CreateBound(puntos[0], puntos[puntos.Count - 1]);
+                    geometria.Add(linea);
+                    segmentos.Add(linea);
+                    lineas++;
+                    continue;
+                }
+
+                List<Line> cortos = Segmentos(puntos, tolerancia);
+                segmentos.AddRange(cortos);
+
+                Curve? curva = CurvaSuave(puntos, transformacion.OfVector(Tangente(eje, tramo.Desde)), transformacion.OfVector(Tangente(eje, tramo.Hasta)));
+                if (curva != null)
+                {
+                    geometria.Add(curva);
+                    curvas++;
+                }
+                else
+                {
+                    geometria.AddRange(cortos);
+                }
             }
 
             //02_Marcas de estacion perpendiculares al eje
@@ -74,7 +94,9 @@ namespace ProyectoDoly.Puentes
                     double mitad = (mayor ? MarcaMayorMetros : MarcaMetros) / 2;
                     XYZ izquierda = transformacion.OfPoint(APies(eje.PuntoDesplazado(estacion, mitad, 0)));
                     XYZ derecha = transformacion.OfPoint(APies(eje.PuntoDesplazado(estacion, -mitad, 0)));
-                    geometria.Add(Line.CreateBound(izquierda, derecha));
+                    Line marca = Line.CreateBound(izquierda, derecha);
+                    geometria.Add(marca);
+                    segmentos.Add(marca);
                     marcas++;
                 }
             }
@@ -88,10 +110,11 @@ namespace ProyectoDoly.Puentes
                 forma.ApplicationId = "ProyectoDoly";
                 forma.ApplicationDataId = eje.Nombre;
 
-                if (!forma.IsValidShape(geometria))
-                    throw new InvalidOperationException("Revit no acepto la geometria del eje. Pruebe con un paso de muestreo mayor.");
+                bool suave = forma.IsValidShape(geometria);
+                if (!suave && !forma.IsValidShape(segmentos))
+                    throw new InvalidOperationException("Revit no aceptó la geometría del eje.");
 
-                forma.SetShape(geometria);
+                forma.SetShape(suave ? geometria : segmentos);
                 forma.SetName($"Eje {eje.Nombre}");
                 forma.get_Parameter(BuiltInParameter.ALL_MODEL_INSTANCE_COMMENTS)?.Set(Descripcion(eje, opciones));
 
@@ -106,7 +129,9 @@ namespace ProyectoDoly.Puentes
                     Resumen = $"Eje \"{eje.Nombre}\" creado.\n\n" +
                               $"Estaciones: {Eje.FormatoEstacion(eje.EstacionInicial)} a {Eje.FormatoEstacion(eje.EstacionFinal)}\n" +
                               $"Longitud: {eje.Horizontal.Longitud:F3} m\n" +
-                              $"Segmentos: {geometria.Count - marcas}, marcas de estación: {marcas}\n" +
+                              (suave
+                                  ? $"Tramos: {lineas} rectas y {curvas} curvas continuas, marcas de estación: {marcas}\n"
+                                  : $"Tramos: {tramos.Count} (Revit no aceptó curvas suaves: se dibujaron con segmentos de 1 m), marcas: {marcas}\n") +
                               $"Ubicación: {(opciones.Ubicacion == Ubicacion.Compartidas ? "coordenadas compartidas" : "inicio en el origen interno")}"
                 };
             }
@@ -145,6 +170,41 @@ namespace ProyectoDoly.Puentes
         private static string Descripcion(Eje eje, OpcionesEje opciones) =>
             $"Eje | {eje.Nombre} | {Eje.FormatoEstacion(eje.EstacionInicial)} a {Eje.FormatoEstacion(eje.EstacionFinal)} | " +
             $"Rasante: {(eje.TieneRasante ? eje.Vertical.Nombre : "ninguna")} | {System.IO.Path.GetFileName(opciones.Archivo)}";
+
+        //Curva suave por los puntos del tramo, con las tangentes del eje en sus extremos para que los tramos empalmen sin quiebre
+        private static Curve? CurvaSuave(List<XYZ> puntos, XYZ tangenteInicio, XYZ tangenteFin)
+        {
+            try
+            {
+                HermiteSplineTangents tangentes = new HermiteSplineTangents { StartTangent = tangenteInicio, EndTangent = tangenteFin };
+                return HermiteSpline.Create(puntos, false, tangentes);
+            }
+            catch (Autodesk.Revit.Exceptions.ApplicationException)
+            {
+                return null;
+            }
+        }
+
+        private static List<Line> Segmentos(List<XYZ> puntos, double tolerancia)
+        {
+            List<Line> lineas = new List<Line>();
+            XYZ anterior = puntos[0];
+            for (int i = 1; i < puntos.Count; i++)
+            {
+                if (puntos[i].DistanceTo(anterior) < tolerancia) continue;
+                lineas.Add(Line.CreateBound(anterior, puntos[i]));
+                anterior = puntos[i];
+            }
+
+            return lineas;
+        }
+
+        //Direccion 3D del eje en una estacion (rumbo en planta y pendiente de la rasante)
+        private static XYZ Tangente(Eje eje, double estacion)
+        {
+            PuntoEje p = eje.Evaluar(estacion);
+            return new XYZ(Math.Cos(p.Rumbo), Math.Sin(p.Rumbo), p.Pendiente).Normalize();
+        }
 
         internal static XYZ APies(Punto3 p) => new XYZ(
             UnitUtils.ConvertToInternalUnits(p.X, UnitTypeId.Meters),

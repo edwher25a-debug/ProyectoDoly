@@ -46,19 +46,55 @@ namespace ProyectoDoly.Puentes
         }
 
         //Seccion con la geometria actual de la familia abierta
-        internal static SeccionTransversal LeerGeometria(Document familia, string nombre)
-        {
-            List<Solid> solidos = Solidos(familia);
-            if (solidos.Count > 0) return DesdeSolidos(nombre, solidos);
+        internal static SeccionTransversal LeerGeometria(Document familia, string nombre) => LeerGeometria(familia, nombre, out _);
 
-            List<Curve> curvas = Curvas(familia);
-            if (curvas.Count > 0) return DesdeCurvas(nombre, curvas);
+        /// <summary>
+        ///     Seccion con la geometria actual de la familia abierta. El punto del eje es el primer punto adaptativo
+        ///     de la familia (como los perfiles de SOFiSTiK); si la familia no es adaptativa, su origen.
+        /// </summary>
+        internal static SeccionTransversal LeerGeometria(Document familia, string nombre, out bool porPuntoAdaptativo)
+        {
+            XYZ? punto = PuntoInsercion(familia);
+            porPuntoAdaptativo = punto != null;
+            XYZ insercion = punto ?? XYZ.Zero;
+
+            List<Solid> solidos = Solidos(familia);
+            if (solidos.Count > 0) return DesdeSolidos(nombre, solidos, insercion);
+
+            //Lazos de lineas de modelo; si no forman contornos, tambien las lineas de referencia
+            foreach (bool conReferencia in new[] { false, true })
+            {
+                List<Curve> curvas = Curvas(familia, conReferencia);
+                if (curvas.Count == 0) continue;
+                try
+                {
+                    return DesdeCurvas(nombre, curvas, insercion);
+                }
+                catch (InvalidOperationException) when (!conReferencia)
+                {
+                    //Se reintenta con las lineas de referencia
+                }
+            }
 
             throw new InvalidOperationException($"La familia {nombre} no tiene sólidos ni líneas cerradas para usar como sección.");
         }
 
         //01_Solidos: cara del lado menor en el eje donde la familia es mas delgada (una extrusion fina de la seccion)
-        private static SeccionTransversal DesdeSolidos(string nombre, List<Solid> solidos)
+        //Primer punto adaptativo de colocacion (numero 1), en coordenadas de la familia
+        private static XYZ? PuntoInsercion(Document familia)
+        {
+            if (familia.OwnerFamily == null || !AdaptiveComponentFamilyUtils.IsAdaptiveComponentFamily(familia.OwnerFamily)) return null;
+
+            return new FilteredElementCollector(familia)
+                .OfClass(typeof(ReferencePoint))
+                .Cast<ReferencePoint>()
+                .Where(p => AdaptiveComponentFamilyUtils.IsAdaptivePlacementPoint(familia, p.Id))
+                .OrderBy(p => AdaptiveComponentFamilyUtils.GetPlacementNumber(familia, p.Id))
+                .Select(p => p.Position)
+                .FirstOrDefault();
+        }
+
+        private static SeccionTransversal DesdeSolidos(string nombre, List<Solid> solidos, XYZ insercion)
         {
             List<XYZ> vertices = solidos.SelectMany(s => s.Edges.Cast<Edge>()).SelectMany(e => e.Tessellate()).ToList();
             XYZ normal = EjeMasDelgado(vertices);
@@ -71,7 +107,7 @@ namespace ProyectoDoly.Puentes
                     if (cara.FaceNormal.DotProduct(normal) > -0.999) continue;
 
                     foreach (CurveLoop lazo in cara.GetEdgesAsCurveLoops())
-                        contornos.Add(new Contorno(Puntos(lazo).Select(p => En2D(p, normal))));
+                        contornos.Add(new Contorno(Puntos(lazo).Select(p => En2D(p - insercion, normal))));
                 }
             }
 
@@ -82,7 +118,7 @@ namespace ProyectoDoly.Puentes
         }
 
         //02_Lineas: se encadenan por sus extremos en contornos cerrados
-        private static SeccionTransversal DesdeCurvas(string nombre, List<Curve> curvas)
+        private static SeccionTransversal DesdeCurvas(string nombre, List<Curve> curvas, XYZ insercion)
         {
             XYZ normal = EjeMasDelgado(curvas.SelectMany(c => c.Tessellate()).ToList());
             double tolerancia = 1e-4;
@@ -114,7 +150,7 @@ namespace ProyectoDoly.Puentes
 
                 //Las lineas sueltas que no cierran no forman seccion
                 if (cadena.Count >= 4 && cadena[0].DistanceTo(cadena[cadena.Count - 1]) <= tolerancia)
-                    contornos.Add(new Contorno(cadena.Select(p => En2D(p, normal))));
+                    contornos.Add(new Contorno(cadena.Select(p => En2D(p - insercion, normal))));
             }
 
             if (contornos.Count == 0)
@@ -159,14 +195,17 @@ namespace ProyectoDoly.Puentes
             }
         }
 
-        private static List<Curve> Curvas(Document familia) =>
+        private static List<Curve> Curvas(Document familia, bool conReferencia) =>
             new FilteredElementCollector(familia)
                 .OfClass(typeof(CurveElement))
                 .Cast<CurveElement>()
-                .Where(c => !(c is ModelCurve modelo && modelo.IsReferenceLine))
+                .Where(c => conReferencia || !EsReferencia(c))
                 .Select(c => c.GeometryCurve)
                 .Where(c => c != null && c.IsBound)
                 .ToList();
+
+        private static bool EsReferencia(CurveElement curva) =>
+            (curva is ModelCurve modelo && modelo.IsReferenceLine) || (curva is CurveByPoints puntos && puntos.IsReferenceLine);
 
         //Normal del plano de la seccion: el eje X, Y o Z en el que la geometria ocupa menos
         private static XYZ EjeMasDelgado(List<XYZ> puntos)
@@ -191,7 +230,9 @@ namespace ProyectoDoly.Puentes
             }
             else if (normal.IsAlmostEqualTo(XYZ.BasisX))
             {
-                derecha = p.Y;
+                //Plano Centro (izquierda/derecha), como los perfiles de SOFiSTiK: X es el sentido del eje,
+                //asi que mirando hacia adelante la derecha es -Y
+                derecha = -p.Y;
                 arriba = p.Z;
             }
             else
