@@ -61,10 +61,21 @@ namespace ProyectoDoly.Puentes
             Eje eje = opciones.Eje;
             eje.MarcasCada = opciones.MarcasCada;
             Transform transformacion = Transformacion(doc, opciones);
+            return Crear(doc, eje, transformacion, opciones.Ubicacion, Descripcion(eje, opciones), $"Importar eje {eje.Nombre}",
+                $"Ubicación: {(opciones.Ubicacion == Ubicacion.Compartidas ? "coordenadas compartidas" : "inicio en el origen interno")}");
+        }
 
-            GeometriaEje geometria = Dibujar(doc, eje, transformacion, opciones.Ubicacion);
+        /// <summary>
+        ///     Crea un eje derivado de otro ya importado (eje secundario), con la misma transformacion que el principal
+        /// </summary>
+        public static ResultadoEje CrearDerivado(Document doc, Eje eje, EjeGuardado principal, string descripcion) =>
+            Crear(doc, eje, principal.Transformacion, null, descripcion, $"Eje secundario {eje.Nombre}", $"Eje principal: {principal.Eje.Nombre}");
 
-            using (Transaction transaccion = new Transaction(doc, $"Importar eje {eje.Nombre}"))
+        private static ResultadoEje Crear(Document doc, Eje eje, Transform transformacion, Ubicacion? ubicacion, string descripcion, string nombreTransaccion, string ultimaLinea)
+        {
+            GeometriaEje geometria = Dibujar(doc, eje, transformacion, ubicacion);
+
+            using (Transaction transaccion = new Transaction(doc, nombreTransaccion))
             {
                 transaccion.Start();
 
@@ -74,7 +85,7 @@ namespace ProyectoDoly.Puentes
 
                 bool suave = AplicarForma(forma, geometria);
                 forma.SetName($"Eje {eje.Nombre}");
-                forma.get_Parameter(BuiltInParameter.ALL_MODEL_INSTANCE_COMMENTS)?.Set(Descripcion(eje, opciones));
+                forma.get_Parameter(BuiltInParameter.ALL_MODEL_INSTANCE_COMMENTS)?.Set(descripcion);
 
                 //El tablero y las demas herramientas leen el eje desde aqui
                 DatosEje.Guardar(forma, eje, transformacion);
@@ -90,7 +101,7 @@ namespace ProyectoDoly.Puentes
                               (suave
                                   ? $"Tramos: {geometria.Lineas} rectas y {geometria.Curvas} curvas continuas, marcas de estación: {geometria.Marcas}\n"
                                   : $"Tramos: {geometria.Tramos} (Revit no aceptó curvas suaves: se dibujaron con segmentos de 1 m), marcas: {geometria.Marcas}\n") +
-                              $"Ubicación: {(opciones.Ubicacion == Ubicacion.Compartidas ? "coordenadas compartidas" : "inicio en el origen interno")}"
+                              ultimaLinea
                 };
             }
         }

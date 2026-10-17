@@ -78,6 +78,18 @@ namespace ProyectoDoly
 
             panelPuentes.AddItem(placements);
 
+            var ejeSecundario = new PushButtonData(nameof(EjeSecundarioCmd), "Eje\nsecundario",
+                Assembly.GetExecutingAssembly().Location, typeof(EjeSecundarioCmd).FullName)
+            {
+                ToolTip = "Crea un eje desplazado del principal: bordes de tablero, ejes de vigas o ramales paralelos.",
+                LongDescription = "Desplazamiento a la derecha constante o variable entre estaciones, y en altura respecto a la rasante. " +
+                                  "El nuevo eje lleva los placements del principal y sirve para todas las herramientas de Puentes.",
+                LargeImage = new BitmapImage(new Uri("pack://application:,,,/ProyectoDoly;component/Resources/Icons/EjeSecundario32.png")),
+                Image = new BitmapImage(new Uri("pack://application:,,,/ProyectoDoly;component/Resources/Icons/EjeSecundario16.png"))
+            };
+
+            panelPuentes.AddItem(ejeSecundario);
+
             var superestructura = new PushButtonData(nameof(SuperestructuraCmd), "Super-\nestructura",
                 Assembly.GetExecutingAssembly().Location, typeof(SuperestructuraCmd).FullName)
             {
