@@ -90,6 +90,17 @@ namespace ProyectoDoly
 
             panelPuentes.AddItem(ejeSecundario);
 
+            var invertirEje = new PushButtonData(nameof(InvertirEjeCmd), "Invertir\neje",
+                Assembly.GetExecutingAssembly().Location, typeof(InvertirEjeCmd).FullName)
+            {
+                ToolTip = "Invierte el sentido del eje seleccionado: el fin pasa a ser el inicio.",
+                LongDescription = "Las estaciones conservan su rango; placements, rasante y variables se trasladan a su nueva estación.",
+                LargeImage = new BitmapImage(new Uri("pack://application:,,,/ProyectoDoly;component/Resources/Icons/InvertirEje32.png")),
+                Image = new BitmapImage(new Uri("pack://application:,,,/ProyectoDoly;component/Resources/Icons/InvertirEje16.png"))
+            };
+
+            panelPuentes.AddItem(invertirEje);
+
             var superestructura = new PushButtonData(nameof(SuperestructuraCmd), "Super-\nestructura",
                 Assembly.GetExecutingAssembly().Location, typeof(SuperestructuraCmd).FullName)
             {
