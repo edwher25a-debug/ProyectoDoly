@@ -24,6 +24,15 @@ del plano respecto a la perpendicular al eje (0 = apoyo recto). Se agregan uno a
 (`Puentes/Ejes/PlacementsEje.cs`), se guardan con el eje (líneas `L|` del serializador) y se dibujan en él: una línea de
 12 m en su plano y un poste vertical de 3 m. Son la referencia para colocar pilas y estribos y cortar el tablero en vanos.
 
+## Subestructura
+
+Botón **Subestructura** (como Substructure de SOFiSTiK): coloca una familia de pila o estribo en los placements elegidos.
+La familia debe ser Modelo genérico adaptativo con **un** punto adaptativo, que va al punto del eje en el placement
+(si no es adaptativa, se usa su origen). Ejes de la familia: X en el sentido del eje (girado por el placement y un giro
+adicional), Y a la izquierda, Z arriba; con *Siempre vertical* desactivado se inclina con la rasante. Desplazamientos a la
+derecha y hacia arriba en el plano del placement. Opcional: un parámetro de longitud de ejemplar recibe la altura desde
+una cota de fundación hasta el punto de inserción. Cálculo en `Puentes/Subestructura/UbicacionSubestructura.cs`.
+
 ## Superestructura
 
 1. Importar el eje (los ejes importados antes de esta versión deben importarse de nuevo: ahora el eje queda guardado en el modelo).
