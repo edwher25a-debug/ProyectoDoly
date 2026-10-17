@@ -1,0 +1,82 @@
+<Window x:Class="ProyectoDoly.Views.v_EjeSecundario"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Eje secundario" Width="820" Height="600" MinWidth="640" MinHeight="440"
+        WindowStartupLocation="CenterScreen" ResizeMode="CanResizeWithGrip"
+        Background="{DynamicResource Fondo}" Foreground="{DynamicResource Texto}">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/ProyectoDoly;component/Views/Estilos.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <DockPanel>
+        <!--Encabezado-->
+        <Border DockPanel.Dock="Top" Background="{StaticResource Primario}" Padding="20,14">
+            <DockPanel>
+                <Image DockPanel.Dock="Left" Source="/ProyectoDoly;component/Resources/Icons/EjeSecundario32.png" Width="32" Height="32" Margin="0,0,12,0"/>
+                <StackPanel>
+                    <TextBlock Text="Eje secundario" Foreground="White" FontSize="18" FontWeight="SemiBold"/>
+                    <TextBlock Text="Crea un eje desplazado del principal: bordes de tablero, ejes de vigas o ramales paralelos." Foreground="{StaticResource MenuTexto}" Margin="0,2,0,0"/>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <!--Botones-->
+        <Border DockPanel.Dock="Bottom" Background="White" BorderBrush="{StaticResource Borde}" BorderThickness="0,1,0,0" Padding="20,10">
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                    <Button Content="Cancelar" Background="{StaticResource TextoSuave}" Command="{Binding CancelarBT}" IsCancel="True"/>
+                    <Button Content="Crear eje" Background="{StaticResource Acento}" Command="{Binding CrearBT}" IsDefault="True" FontWeight="SemiBold"/>
+                </StackPanel>
+                <TextBlock Text="{Binding Error}" Foreground="{StaticResource Error}" VerticalAlignment="Center" TextWrapping="Wrap"/>
+            </DockPanel>
+        </Border>
+
+        <Grid Margin="20,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="20"/>
+                <ColumnDefinition Width="280"/>
+            </Grid.ColumnDefinitions>
+
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <GroupBox Header="1  ·  Eje principal">
+                    <ComboBox ItemsSource="{Binding Ejes}" SelectedItem="{Binding EjeSelecc}"/>
+                </GroupBox>
+
+                <GroupBox Header="2  ·  Nombre">
+                    <TextBox Text="{Binding Nombre, UpdateSourceTrigger=PropertyChanged}"/>
+                </GroupBox>
+
+                <GroupBox Header="3  ·  Desplazamiento">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <RadioButton IsChecked="{Binding Constante}" Content="Constante, a la derecha (m)  " VerticalAlignment="Center"/>
+                            <TextBox Width="80" Text="{Binding Derecha, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding Constante}" ToolTip="Negativo = a la izquierda del eje."/>
+                        </StackPanel>
+                        <RadioButton IsChecked="{Binding Variable}" Content="Variable a lo largo del eje (lineal entre puntos)" Margin="0,8,0,2"/>
+                        <TextBox Text="{Binding Tabla, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding Variable}" Height="70"
+                                 AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"/>
+                        <TextBlock Style="{StaticResource Ayuda}" Margin="0,2,0,0" TextWrapping="Wrap"
+                                   Text="Una línea o punto y coma por punto: estación del principal = desplazamiento a la derecha. Ejemplo: 0+000 = 5; 0+080 = 8. Antes del primero y después del último se mantiene el valor."/>
+                        <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                            <TextBlock Text="Subir respecto a la rasante (m)  " VerticalAlignment="Center"/>
+                            <TextBox Width="80" Text="{Binding Subir, UpdateSourceTrigger=PropertyChanged}"/>
+                        </StackPanel>
+                        <TextBlock Style="{StaticResource Ayuda}" Margin="0,6,0,0" TextWrapping="Wrap"
+                                   Text="El eje secundario es un eje más: sirve para Superestructura, Subestructura, Secciones y las demás herramientas. Lleva los placements del principal en su estación equivalente."/>
+                    </StackPanel>
+                </GroupBox>
+            </StackPanel>
+            </ScrollViewer>
+
+            <GroupBox Grid.Column="2" Header="Vista previa" VerticalAlignment="Top">
+                <TextBlock Text="{Binding Resumen}" TextWrapping="Wrap" LineHeight="20"/>
+            </GroupBox>
+        </Grid>
+    </DockPanel>
+</Window>
