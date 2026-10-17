@@ -38,70 +38,32 @@ namespace ProyectoDoly.Puentes
         private const double MarcaMetros = 2;
         private const double MarcaMayorMetros = 5;
 
+        //Marca de placement: linea en su plano, mas larga que las de estacion, y un poste vertical en el eje
+        private const double PlacementAncho = 12;
+        private const double PlacementAlto = 3;
+
+        //Geometria del eje con curvas suaves y, por si Revit no las acepta, la misma con segmentos cortos
+        private sealed class GeometriaEje
+        {
+            public List<GeometryObject> Suave { get; } = new List<GeometryObject>();
+            public List<GeometryObject> Segmentos { get; } = new List<GeometryObject>();
+            public int Tramos, Lineas, Curvas, Marcas, Placements;
+
+            public void Ambas(GeometryObject objeto)
+            {
+                Suave.Add(objeto);
+                Segmentos.Add(objeto);
+            }
+        }
+
         public static ResultadoEje Crear(Document doc, OpcionesEje opciones)
         {
             Eje eje = opciones.Eje;
+            eje.MarcasCada = opciones.MarcasCada;
             Transform transformacion = Transformacion(doc, opciones);
-            double tolerancia = doc.Application.ShortCurveTolerance;
 
-            //01_Eje continuo: una linea por recta con pendiente constante y una curva suave por cada curva, clotoide
-            //o curva vertical (sin partirlo cada pocos metros)
-            List<TramoEje> tramos = TramosEje.Calcular(eje);
-            ValidarDistancia(tramos.SelectMany(t => t.Estaciones).Select(e => transformacion.OfPoint(APies(eje.Evaluar(e).Posicion))).ToList(),
-                opciones.Ubicacion);
+            GeometriaEje geometria = Dibujar(doc, eje, transformacion, opciones.Ubicacion);
 
-            //Geometria con curvas suaves y, por si Revit no las acepta, la misma con segmentos cortos
-            List<GeometryObject> geometria = new List<GeometryObject>();
-            List<GeometryObject> segmentos = new List<GeometryObject>();
-            int curvas = 0, lineas = 0;
-            foreach (TramoEje tramo in tramos)
-            {
-                List<XYZ> puntos = tramo.Estaciones.Select(e => transformacion.OfPoint(APies(eje.Evaluar(e).Posicion))).ToList();
-                if (puntos[0].DistanceTo(puntos[puntos.Count - 1]) < tolerancia) continue;
-
-                if (tramo.EsLinea)
-                {
-                    Line linea = Line.CreateBound(puntos[0], puntos[puntos.Count - 1]);
-                    geometria.Add(linea);
-                    segmentos.Add(linea);
-                    lineas++;
-                    continue;
-                }
-
-                List<Line> cortos = Segmentos(puntos, tolerancia);
-                segmentos.AddRange(cortos);
-
-                Curve? curva = CurvaSuave(puntos, transformacion.OfVector(Tangente(eje, tramo.Desde)), transformacion.OfVector(Tangente(eje, tramo.Hasta)));
-                if (curva != null)
-                {
-                    geometria.Add(curva);
-                    curvas++;
-                }
-                else
-                {
-                    geometria.AddRange(cortos);
-                }
-            }
-
-            //02_Marcas de estacion perpendiculares al eje
-            int marcas = 0;
-            if (opciones.MarcasCada > 0)
-            {
-                double primera = Math.Ceiling(eje.EstacionInicial / opciones.MarcasCada) * opciones.MarcasCada;
-                for (double estacion = primera; estacion <= eje.EstacionFinal + 1e-6; estacion += opciones.MarcasCada)
-                {
-                    bool mayor = Math.Abs(Math.IEEERemainder(estacion, 100)) < 1e-6;
-                    double mitad = (mayor ? MarcaMayorMetros : MarcaMetros) / 2;
-                    XYZ izquierda = transformacion.OfPoint(APies(eje.PuntoDesplazado(estacion, mitad, 0)));
-                    XYZ derecha = transformacion.OfPoint(APies(eje.PuntoDesplazado(estacion, -mitad, 0)));
-                    Line marca = Line.CreateBound(izquierda, derecha);
-                    geometria.Add(marca);
-                    segmentos.Add(marca);
-                    marcas++;
-                }
-            }
-
-            //03_Elemento en el modelo
             using (Transaction transaccion = new Transaction(doc, $"Importar eje {eje.Nombre}"))
             {
                 transaccion.Start();
@@ -110,11 +72,7 @@ namespace ProyectoDoly.Puentes
                 forma.ApplicationId = "ProyectoDoly";
                 forma.ApplicationDataId = eje.Nombre;
 
-                bool suave = forma.IsValidShape(geometria);
-                if (!suave && !forma.IsValidShape(segmentos))
-                    throw new InvalidOperationException("Revit no aceptó la geometría del eje.");
-
-                forma.SetShape(suave ? geometria : segmentos);
+                bool suave = AplicarForma(forma, geometria);
                 forma.SetName($"Eje {eje.Nombre}");
                 forma.get_Parameter(BuiltInParameter.ALL_MODEL_INSTANCE_COMMENTS)?.Set(Descripcion(eje, opciones));
 
@@ -130,11 +88,100 @@ namespace ProyectoDoly.Puentes
                               $"Estaciones: {Eje.FormatoEstacion(eje.EstacionInicial)} a {Eje.FormatoEstacion(eje.EstacionFinal)}\n" +
                               $"Longitud: {eje.Horizontal.Longitud:F3} m\n" +
                               (suave
-                                  ? $"Tramos: {lineas} rectas y {curvas} curvas continuas, marcas de estación: {marcas}\n"
-                                  : $"Tramos: {tramos.Count} (Revit no aceptó curvas suaves: se dibujaron con segmentos de 1 m), marcas: {marcas}\n") +
+                                  ? $"Tramos: {geometria.Lineas} rectas y {geometria.Curvas} curvas continuas, marcas de estación: {geometria.Marcas}\n"
+                                  : $"Tramos: {geometria.Tramos} (Revit no aceptó curvas suaves: se dibujaron con segmentos de 1 m), marcas: {geometria.Marcas}\n") +
                               $"Ubicación: {(opciones.Ubicacion == Ubicacion.Compartidas ? "coordenadas compartidas" : "inicio en el origen interno")}"
                 };
             }
+        }
+
+        /// <summary>
+        ///     Vuelve a dibujar un eje ya importado (por ejemplo, tras cambiar sus placements) y guarda sus datos.
+        ///     Debe llamarse dentro de una transaccion.
+        /// </summary>
+        public static void Actualizar(Document doc, EjeGuardado guardado)
+        {
+            if (!(doc.GetElement(guardado.Id) is DirectShape forma))
+                throw new InvalidOperationException("No encontré el elemento del eje en el modelo.");
+
+            GeometriaEje geometria = Dibujar(doc, guardado.Eje, guardado.Transformacion, null);
+            AplicarForma(forma, geometria);
+            DatosEje.Guardar(forma, guardado.Eje, guardado.Transformacion);
+        }
+
+        private static bool AplicarForma(DirectShape forma, GeometriaEje geometria)
+        {
+            bool suave = forma.IsValidShape(geometria.Suave);
+            if (!suave && !forma.IsValidShape(geometria.Segmentos))
+                throw new InvalidOperationException("Revit no aceptó la geometría del eje.");
+
+            forma.SetShape(suave ? geometria.Suave : geometria.Segmentos);
+            return suave;
+        }
+
+        private static GeometriaEje Dibujar(Document doc, Eje eje, Transform transformacion, Ubicacion? ubicacion)
+        {
+            double tolerancia = doc.Application.ShortCurveTolerance;
+            XYZ Revit(Punto3 p) => transformacion.OfPoint(APies(p));
+
+            //01_Eje continuo: una linea por recta con pendiente constante y una curva suave por cada curva, clotoide
+            //o curva vertical (sin partirlo cada pocos metros)
+            List<TramoEje> tramos = TramosEje.Calcular(eje);
+            if (ubicacion != null)
+                ValidarDistancia(tramos.SelectMany(t => t.Estaciones).Select(e => Revit(eje.Evaluar(e).Posicion)).ToList(), ubicacion.Value);
+
+            GeometriaEje geometria = new GeometriaEje { Tramos = tramos.Count };
+            foreach (TramoEje tramo in tramos)
+            {
+                List<XYZ> puntos = tramo.Estaciones.Select(e => Revit(eje.Evaluar(e).Posicion)).ToList();
+                if (puntos[0].DistanceTo(puntos[puntos.Count - 1]) < tolerancia) continue;
+
+                if (tramo.EsLinea)
+                {
+                    geometria.Ambas(Line.CreateBound(puntos[0], puntos[puntos.Count - 1]));
+                    geometria.Lineas++;
+                    continue;
+                }
+
+                List<Line> cortos = Segmentos(puntos, tolerancia);
+                geometria.Segmentos.AddRange(cortos);
+
+                Curve? curva = CurvaSuave(puntos, transformacion.OfVector(Tangente(eje, tramo.Desde)), transformacion.OfVector(Tangente(eje, tramo.Hasta)));
+                if (curva != null)
+                {
+                    geometria.Suave.Add(curva);
+                    geometria.Curvas++;
+                }
+                else
+                {
+                    geometria.Suave.AddRange(cortos);
+                }
+            }
+
+            //02_Marcas de estacion perpendiculares al eje
+            if (eje.MarcasCada > 0)
+            {
+                double primera = Math.Ceiling(eje.EstacionInicial / eje.MarcasCada) * eje.MarcasCada;
+                for (double estacion = primera; estacion <= eje.EstacionFinal + 1e-6; estacion += eje.MarcasCada)
+                {
+                    bool mayor = Math.Abs(Math.IEEERemainder(estacion, 100)) < 1e-6;
+                    double mitad = (mayor ? MarcaMayorMetros : MarcaMetros) / 2;
+                    geometria.Ambas(Line.CreateBound(Revit(eje.PuntoDesplazado(estacion, mitad, 0)), Revit(eje.PuntoDesplazado(estacion, -mitad, 0))));
+                    geometria.Marcas++;
+                }
+            }
+
+            //03_Placements: linea en el plano del placement (con su giro) y poste vertical
+            foreach (Placement placement in eje.Placements)
+            {
+                (Punto3 izquierda, Punto3 derecha) = PlacementsEje.Marca(eje, placement, PlacementAncho);
+                geometria.Ambas(Line.CreateBound(Revit(izquierda), Revit(derecha)));
+                Punto3 centro = eje.Evaluar(placement.Estacion).Posicion;
+                geometria.Ambas(Line.CreateBound(Revit(centro), Revit(new Punto3(centro.X, centro.Y, centro.Z + PlacementAlto))));
+                geometria.Placements++;
+            }
+
+            return geometria;
         }
 
         //Coordenadas del eje (metros, Este/Norte/Cota) a coordenadas internas de Revit (pies)

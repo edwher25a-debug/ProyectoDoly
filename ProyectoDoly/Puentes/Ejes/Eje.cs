@@ -26,6 +26,10 @@ namespace ProyectoDoly.Puentes.Ejes
     {
         public string Id { get; set; } = "";
         public double Estacion { get; set; }
+
+        //Giro del plano del placement respecto a la perpendicular al eje, en grados (+ antihorario visto en planta).
+        //0 = plano vertical perpendicular al eje (por ejemplo, un apoyo recto); otro valor = apoyo esviado
+        public double Rotacion { get; set; }
     }
 
     //Valor que cambia a lo largo del eje (canto, ancho, espesor...), interpolado linealmente
@@ -70,6 +74,11 @@ namespace ProyectoDoly.Puentes.Ejes
         public PerfilVertical Vertical { get; }
         public bool TieneRasante { get; }
         public List<Placement> Placements { get; } = new List<Placement>();
+
+        //Separacion de las marcas de estacion al dibujar el eje (m, 0 = sin marcas)
+        public double MarcasCada { get; set; } = 20;
+
+        public Placement? BuscarPlacement(string id) => Placements.FirstOrDefault(p => string.Equals(p.Id, id, StringComparison.OrdinalIgnoreCase));
         public List<Variable> Variables { get; } = new List<Variable>();
 
         public double EstacionInicial => Horizontal.EstacionInicial;

@@ -60,6 +60,8 @@
         <Resource Include="Resources\Icons\ImportarEje32.png" />
         <Resource Include="Resources\Icons\Superestructura16.png" />
         <Resource Include="Resources\Icons\Superestructura32.png" />
+        <Resource Include="Resources\Icons\Placements16.png" />
+        <Resource Include="Resources\Icons\Placements32.png" />
     </ItemGroup>
 
 </Project>

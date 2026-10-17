@@ -17,6 +17,13 @@ El análisis de restricciones está en [sofistik-bridge-modeler-restricciones.md
 
 Archivo de prueba: `Puentes.Tests/Datos/eje_prueba.xml`.
 
+## Placements
+
+Botón **Placements**: puntos con nombre a lo largo del eje (como "Add Placements" de SOFiSTiK), con ID, estación y giro
+del plano respecto a la perpendicular al eje (0 = apoyo recto). Se agregan uno a uno o cada cierta distancia
+(`Puentes/Ejes/PlacementsEje.cs`), se guardan con el eje (líneas `L|` del serializador) y se dibujan en él: una línea de
+12 m en su plano y un poste vertical de 3 m. Son la referencia para colocar pilas y estribos y cortar el tablero en vanos.
+
 ## Superestructura
 
 1. Importar el eje (los ejes importados antes de esta versión deben importarse de nuevo: ahora el eje queda guardado en el modelo).
