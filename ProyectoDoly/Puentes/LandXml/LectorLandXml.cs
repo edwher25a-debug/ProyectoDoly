@@ -16,7 +16,27 @@ namespace ProyectoDoly.Puentes.LandXml
         public List<PerfilVertical> Rasantes { get; } = new List<PerfilVertical>();
         public List<string> Avisos { get; } = new List<string>();
 
-        public Eje CrearEje(PerfilVertical? rasante) => new Eje(Nombre, Horizontal, rasante);
+        //Solo al leer un eje en JSON, que ya trae placements y variables
+        public List<Placement> Placements { get; } = new List<Placement>();
+        public List<Variable> Variables { get; } = new List<Variable>();
+
+        public Eje CrearEje(PerfilVertical? rasante)
+        {
+            Eje eje = new Eje(Nombre, Horizontal, rasante);
+            eje.Placements.AddRange(Placements.Select(p => new Placement { Id = p.Id, Estacion = p.Estacion, Rotacion = p.Rotacion }));
+            eje.Variables.AddRange(Variables);
+            return eje;
+        }
+
+        //Eje leido de JSON, como alineamiento con su rasante
+        public static AlineamientoLandXml DesdeEje(Eje eje)
+        {
+            AlineamientoLandXml a = new AlineamientoLandXml { Nombre = eje.Nombre, Horizontal = eje.Horizontal };
+            if (eje.TieneRasante) a.Rasantes.Add(eje.Vertical);
+            a.Placements.AddRange(eje.Placements);
+            a.Variables.AddRange(eje.Variables);
+            return a;
+        }
 
         public override string ToString() => Nombre;
     }
