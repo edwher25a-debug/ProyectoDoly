@@ -18,6 +18,30 @@ namespace ProyectoDoly.Puentes
         public List<Variable> Variables { get; set; } = new List<Variable>();
         public List<SeccionTransversal>? PorEstacion { get; set; }
 
+        //Nombre del tramo (por ejemplo "P1-P2" cuando se crea un tablero por vano); vacio = todo el tramo
+        public string Nombre { get; set; } = "";
+
+        public string NombreTablero => $"Tablero {Eje.Eje.Nombre}" + (Nombre.Length > 0 ? $" {Nombre}" : "");
+
+        //Copia para otro tramo de estaciones (las secciones por estacion se recalculan aparte)
+        public OpcionesSuperestructura ParaTramo(string nombre, double desde, double hasta) => new OpcionesSuperestructura
+        {
+            Eje = Eje,
+            Seccion = Seccion,
+            FamiliaAdaptativa = FamiliaAdaptativa,
+            Variables = Variables,
+            Nombre = nombre,
+            Barrido = new OpcionesBarrido
+            {
+                EstacionInicial = desde,
+                EstacionFinal = hasta,
+                Paso = Barrido.Paso,
+                DesplazamientoLateral = Barrido.DesplazamientoLateral,
+                DesplazamientoVertical = Barrido.DesplazamientoVertical,
+                EstacionesExtra = Barrido.EstacionesExtra.ToList()
+            }
+        };
+
         public List<double> Estaciones() => BarridoTablero.Estaciones(Eje.Eje, Barrido);
 
         public IReadOnlyList<SeccionTransversal> Secciones() => PorEstacion ?? Estaciones().Select(_ => Seccion).ToList();
@@ -87,9 +111,9 @@ namespace ProyectoDoly.Puentes
 
                 DirectShape forma = DirectShape.CreateElement(doc, Categoria(doc));
                 forma.ApplicationId = "ProyectoDoly";
-                forma.ApplicationDataId = $"Superestructura {eje.Nombre}";
+                forma.ApplicationDataId = $"Superestructura {eje.Nombre} {opciones.Nombre}".Trim();
                 forma.SetShape(geometria);
-                forma.SetName($"Tablero {eje.Nombre}");
+                forma.SetName(opciones.NombreTablero);
                 forma.get_Parameter(BuiltInParameter.ALL_MODEL_INSTANCE_COMMENTS)?.Set(Descripcion(opciones));
 
                 transaccion.Commit();
@@ -215,7 +239,7 @@ namespace ProyectoDoly.Puentes
         }
 
         private static string Descripcion(OpcionesSuperestructura opciones) =>
-            $"Superestructura | Eje {opciones.Eje.Eje.Nombre} | {opciones.Seccion.Nombre} | " +
+            $"Superestructura | Eje {opciones.Eje.Eje.Nombre} | {(opciones.Nombre.Length > 0 ? opciones.Nombre + " | " : "")}{opciones.Seccion.Nombre} | " +
             $"{Eje.FormatoEstacion(opciones.Barrido.EstacionInicial)} a {Eje.FormatoEstacion(opciones.Barrido.EstacionFinal)}";
     }
 }

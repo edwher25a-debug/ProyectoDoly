@@ -2,6 +2,7 @@ using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using ProyectoDoly.Puentes;
+using Ejes = ProyectoDoly.Puentes.Ejes;
 using ProyectoDoly.Utils;
 using ProyectoDoly.ViewModels;
 using ProyectoDoly.Views;
@@ -58,12 +59,25 @@ namespace ProyectoDoly.Commands
 
                 if (!aceptado || viewModel.Opciones == null) return Result.Cancelled;
 
-                paso = "crear el tablero en el modelo";
-                ResultadoSuperestructura resultado = viewModel.Opciones.FamiliaAdaptativa
-                    ? FamiliaTablero.Crear(doc, viewModel.Opciones)
-                    : CreadorSuperestructura.Crear(doc, viewModel.Opciones);
-                uidoc.Selection.SetElementIds(new List<ElementId> { resultado.Id });
-                TaskDialog.Show("Superestructura", resultado.Resumen);
+                //Un tablero, o uno por vano entre placements
+                List<OpcionesSuperestructura> tableros = viewModel.Tableros.Count > 0 ? viewModel.Tableros : new List<OpcionesSuperestructura> { viewModel.Opciones };
+                List<ElementId> creados = new List<ElementId>();
+                List<string> resumenes = new List<string>();
+                foreach (OpcionesSuperestructura tablero in tableros)
+                {
+                    paso = $"crear {tablero.NombreTablero} en el modelo";
+                    ResultadoSuperestructura resultado = tablero.FamiliaAdaptativa
+                        ? FamiliaTablero.Crear(doc, tablero)
+                        : CreadorSuperestructura.Crear(doc, tablero);
+                    creados.Add(resultado.Id);
+                    resumenes.Add(resultado.Resumen);
+                }
+
+                uidoc.Selection.SetElementIds(creados);
+                TaskDialog.Show("Superestructura", tableros.Count == 1
+                    ? resumenes[0]
+                    : $"{tableros.Count} tableros creados, uno por vano:\n" + string.Join("\n", tableros.Select(t =>
+                          $"{t.NombreTablero}   {Ejes.Eje.FormatoEstacion(t.Barrido.EstacionInicial)} a {Ejes.Eje.FormatoEstacion(t.Barrido.EstacionFinal)}")));
                 return Result.Succeeded;
             }
             catch (Exception ex) when (ex is InvalidOperationException || ex is ArgumentException)
