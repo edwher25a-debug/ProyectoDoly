@@ -74,6 +74,8 @@
         <Resource Include="Resources\Icons\EjeSecundario32.png" />
         <Resource Include="Resources\Icons\ExportarEje16.png" />
         <Resource Include="Resources\Icons\ExportarEje32.png" />
+        <Resource Include="Resources\Icons\InvertirEje16.png" />
+        <Resource Include="Resources\Icons\InvertirEje32.png" />
     </ItemGroup>
 
 </Project>

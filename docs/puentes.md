@@ -29,6 +29,10 @@ del plano respecto a la perpendicular al eje (0 = apoyo recto). Se agregan uno a
 Botón **Exportar eje**: guarda el eje seleccionado (o el único del modelo) en un JSON abierto con la planta (tramos), la rasante (PIV), los placements y las variables. **Importar eje** también lee ese archivo .json.
 El formato está documentado en `Puentes/Ejes/JsonEje.cs`: metros, rumbos en radianes desde el Este en sentido antihorario y curvatura positiva hacia la izquierda.
 
+## Invertir eje
+
+Botón **Invertir eje**: el fin del eje seleccionado pasa a ser el inicio. El rango de estaciones no cambia, y los placements, la rasante y las variables se trasladan a su nueva estación. El plano de cada placement queda igual. Los elementos ya creados no se mueven; para actualizar sus estaciones, vuelva a usar Cuantificar. Se puede deshacer con Ctrl+Z.
+
 ## Eje secundario
 
 Botón **Eje secundario**, como los ejes secundarios de SOFiSTiK: crea un eje nuevo desplazado del principal, por ejemplo un borde de tablero, el eje de una viga o un ramal paralelo.
