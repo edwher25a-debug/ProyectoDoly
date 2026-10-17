@@ -1,0 +1,133 @@
+<Window x:Class="ProyectoDoly.Views.v_Planta"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Rejillas y estaciones" Width="900" Height="760" MinWidth="800" MinHeight="640"
+        WindowStartupLocation="CenterScreen" ResizeMode="CanResizeWithGrip"
+        Background="{DynamicResource Fondo}" Foreground="{DynamicResource Texto}">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/ProyectoDoly;component/Views/Estilos.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <BooleanToVisibilityConverter x:Key="VisibleSi"/>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <DockPanel>
+        <!--Encabezado-->
+        <Border DockPanel.Dock="Top" Background="{StaticResource Primario}" Padding="20,14">
+            <DockPanel>
+                <Image DockPanel.Dock="Left" Source="/ProyectoDoly;component/Resources/Icons/Planta32.png" Width="32" Height="32" Margin="0,0,12,0"/>
+                <StackPanel>
+                    <TextBlock Text="Rejillas y estaciones" Foreground="White" FontSize="18" FontWeight="SemiBold"/>
+                    <TextBlock Text="Crea rejillas en los placements y marca las estaciones del eje en la planta." Foreground="{StaticResource MenuTexto}" Margin="0,2,0,0"/>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <!--Botones-->
+        <Border DockPanel.Dock="Bottom" Background="White" BorderBrush="{StaticResource Borde}" BorderThickness="0,1,0,0" Padding="20,10">
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                    <Button Content="Cancelar" Background="{StaticResource TextoSuave}" Command="{Binding CancelarBT}" IsCancel="True"/>
+                    <Button Content="Crear en el modelo" Background="{StaticResource Acento}" Command="{Binding CrearBT}" IsDefault="True" FontWeight="SemiBold"/>
+                </StackPanel>
+                <TextBlock Text="{Binding Error}" Foreground="{StaticResource Error}" VerticalAlignment="Center" TextWrapping="Wrap"/>
+            </DockPanel>
+        </Border>
+
+        <Grid Margin="20,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="20"/>
+                <ColumnDefinition Width="300"/>
+            </Grid.ColumnDefinitions>
+
+            <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <GroupBox Header="1  ·  Eje">
+                    <ComboBox ItemsSource="{Binding Ejes}" SelectedItem="{Binding EjeSelecc}"/>
+                </GroupBox>
+
+                <GroupBox Header="2  ·  Rejillas en placements">
+                    <StackPanel>
+                        <CheckBox IsChecked="{Binding CrearRejillas}" Content="Crear rejillas transversales al eje" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                        <StackPanel IsEnabled="{Binding CrearRejillas}">
+                            <TextBlock Style="{StaticResource Ayuda}" Margin="0,0,0,4" Text="Este eje no tiene placements. Créelos con el botón Placements."
+                                       Visibility="{Binding SinPlacements, Converter={StaticResource VisibleSi}}"/>
+                            <Border BorderBrush="{StaticResource Borde}" BorderThickness="1" Background="White" MaxHeight="150">
+                                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                    <ItemsControl ItemsSource="{Binding Placements}" Margin="6,4">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <CheckBox IsChecked="{Binding Elegido}" Content="{Binding Texto}" Margin="0,2"/>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </ScrollViewer>
+                            </Border>
+                            <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                                <Button Content="Todos" Command="{Binding TodosBT}"/>
+                                <Button Content="Ninguno" Background="{StaticResource TextoSuave}" Command="{Binding NingunoBT}"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                                <CheckBox IsChecked="{Binding EntrePlacements}" Content="También entre placements, como máximo cada " VerticalAlignment="Center"/>
+                                <TextBox Width="60" Text="{Binding Cada, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding EntrePlacements}"/>
+                                <TextBlock Text=" m" VerticalAlignment="Center"/>
+                            </StackPanel>
+                            <CheckBox IsChecked="{Binding ConsiderarGiro}" Content="Girar la rejilla con el giro del placement" Margin="0,4,0,0"/>
+                            <Grid Margin="0,6,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="90"/>
+                                    <ColumnDefinition Width="24"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="90"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Largo (m)  " VerticalAlignment="Center" ToolTip="Centrada en el eje; la burbuja queda a la izquierda."/>
+                                <TextBox Grid.Column="1" Text="{Binding LargoRejilla, UpdateSourceTrigger=PropertyChanged}"/>
+                                <TextBlock Grid.Column="3" Text="Prefijo del nombre  " VerticalAlignment="Center" ToolTip="Se antepone al ID del placement, por ejemplo Eje- da Eje-P1."/>
+                                <TextBox Grid.Column="4" Text="{Binding Prefijo, UpdateSourceTrigger=PropertyChanged}"/>
+                            </Grid>
+                        </StackPanel>
+                    </StackPanel>
+                </GroupBox>
+
+                <GroupBox Header="3  ·  Estaciones en la planta">
+                    <StackPanel>
+                        <CheckBox IsChecked="{Binding CrearEstaciones}" IsEnabled="{Binding HayVistaPlanta}" Content="Marcar las estaciones del eje" FontWeight="SemiBold"/>
+                        <TextBlock Style="{StaticResource Ayuda}" Text="{Binding NombreVista}" Margin="0,2,0,6"/>
+                        <StackPanel IsEnabled="{Binding CrearEstaciones}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="90"/>
+                                    <ColumnDefinition Width="24"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="90"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Cada (m)  " VerticalAlignment="Center"/>
+                                <TextBox Grid.Column="1" Text="{Binding CadaEstacion, UpdateSourceTrigger=PropertyChanged}"/>
+                                <TextBlock Grid.Column="3" Text="Largo de la raya (m)  " VerticalAlignment="Center"/>
+                                <TextBox Grid.Column="4" Text="{Binding LargoMarca, UpdateSourceTrigger=PropertyChanged}"/>
+                            </Grid>
+                            <CheckBox IsChecked="{Binding Extremos}" Content="Marcar también el inicio y el fin del eje" Margin="0,6,0,0"/>
+                            <DockPanel Margin="0,6,0,0">
+                                <TextBlock Text="Tipo de texto  " VerticalAlignment="Center"/>
+                                <ComboBox ItemsSource="{Binding TiposTexto}" SelectedItem="{Binding TipoTexto}" DisplayMemberPath="Name"/>
+                            </DockPanel>
+                            <TextBlock Style="{StaticResource Ayuda}" Margin="0,4,0,0" TextWrapping="Wrap"
+                                       Text="Cada marca es una línea de detalle transversal al eje con un texto de la estación (0+020) a su izquierda."/>
+                        </StackPanel>
+                    </StackPanel>
+                </GroupBox>
+            </StackPanel>
+            </ScrollViewer>
+
+            <!--Resumen-->
+            <GroupBox Grid.Column="2" Header="Vista previa" VerticalAlignment="Top">
+                <TextBlock Text="{Binding Resumen}" TextWrapping="Wrap" LineHeight="20"/>
+            </GroupBox>
+        </Grid>
+    </DockPanel>
+</Window>
