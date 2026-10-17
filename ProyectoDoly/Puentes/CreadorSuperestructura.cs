@@ -21,7 +21,11 @@ namespace ProyectoDoly.Puentes
         //Nombre del tramo (por ejemplo "P1-P2" cuando se crea un tablero por vano); vacio = todo el tramo
         public string Nombre { get; set; } = "";
 
-        public string NombreTablero => $"Tablero {Eje.Eje.Nombre}" + (Nombre.Length > 0 ? $" {Nombre}" : "");
+        //Que es el componente barrido (como Superstructure, Parapets o Railing de SOFiSTiK); da nombre al elemento
+        public static readonly string[] Componentes = { "Tablero", "Parapeto", "Baranda", "Bordillo", "Viga" };
+        public string Componente { get; set; } = "Tablero";
+
+        public string NombreTablero => $"{Componente} {Eje.Eje.Nombre}" + (Nombre.Length > 0 ? $" {Nombre}" : "");
 
         //Copia para otro tramo de estaciones (las secciones por estacion se recalculan aparte)
         public OpcionesSuperestructura ParaTramo(string nombre, double desde, double hasta) => new OpcionesSuperestructura
@@ -30,6 +34,7 @@ namespace ProyectoDoly.Puentes
             Seccion = Seccion,
             FamiliaAdaptativa = FamiliaAdaptativa,
             Variables = Variables,
+            Componente = Componente,
             Nombre = nombre,
             Barrido = new OpcionesBarrido
             {
@@ -41,6 +46,15 @@ namespace ProyectoDoly.Puentes
                 EstacionesExtra = Barrido.EstacionesExtra.ToList()
             }
         };
+
+        //El mismo componente al otro lado del eje: seccion reflejada y desplazamiento lateral con signo contrario
+        public OpcionesSuperestructura Reflejada(string nombre)
+        {
+            OpcionesSuperestructura otra = ParaTramo(nombre, Barrido.EstacionInicial, Barrido.EstacionFinal);
+            otra.Seccion = Seccion.Espejo();
+            otra.Barrido.DesplazamientoLateral = -Barrido.DesplazamientoLateral;
+            return otra;
+        }
 
         public List<double> Estaciones() => BarridoTablero.Estaciones(Eje.Eje, Barrido);
 

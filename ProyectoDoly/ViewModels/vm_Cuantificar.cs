@@ -43,7 +43,7 @@ namespace ProyectoDoly.ViewModels
 
         public bool HaySeleccion => seleccion.Count > 0;
         public string TextoSeleccion => $"Los elementos seleccionados ({seleccion.Count})";
-        public string TextoCreados => $"Todo lo creado con Puentes en este eje: tableros, pilas y estribos ({creados.Count})";
+        public string TextoCreados => $"Todo lo creado con Puentes en este eje: tableros, parapetos, pilas y estribos ({creados.Count})";
 
         private bool usarSeleccion;
         public bool UsarSeleccion
