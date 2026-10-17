@@ -82,6 +82,34 @@ namespace ProyectoDoly.Puentes.Ejes
                 new Punto3(centro.X - d.X * mitad, centro.Y - d.Y * mitad, centro.Z));
         }
 
+        /// <summary>
+        ///     Tramos de tablero entre dos placements (como From/To y el Repeater de SOFiSTiK): uno solo de "desde" a "hasta"
+        ///     o uno por vano entre placements consecutivos. "junta" separa vanos contiguos (m, se reparte a cada lado).
+        /// </summary>
+        public static List<(string nombre, double desde, double hasta)> Vanos(IEnumerable<Placement> placements, string desdeId, string hastaId,
+            bool porVano, double junta = 0)
+        {
+            List<Placement> orden = placements.OrderBy(p => p.Estacion).ToList();
+            int i = orden.FindIndex(p => string.Equals(p.Id, desdeId, StringComparison.OrdinalIgnoreCase));
+            int j = orden.FindIndex(p => string.Equals(p.Id, hastaId, StringComparison.OrdinalIgnoreCase));
+            if (i < 0 || j < 0) throw new ArgumentException("Elija los placements de inicio y fin.");
+            if (j <= i) throw new ArgumentException("El placement final debe estar después del inicial.");
+            if (junta < 0) throw new ArgumentException("La junta no puede ser negativa.");
+
+            if (!porVano) return new List<(string, double, double)> { ($"{orden[i].Id}-{orden[j].Id}", orden[i].Estacion, orden[j].Estacion) };
+
+            List<(string, double, double)> vanos = new List<(string, double, double)>();
+            for (int k = i; k < j; k++)
+            {
+                double desde = orden[k].Estacion + (k > i ? junta / 2 : 0);
+                double hasta = orden[k + 1].Estacion - (k + 1 < j ? junta / 2 : 0);
+                if (hasta - desde < 0.01) throw new ArgumentException($"El vano {orden[k].Id}-{orden[k + 1].Id} es más corto que la junta.");
+                vanos.Add(($"{orden[k].Id}-{orden[k + 1].Id}", desde, hasta));
+            }
+
+            return vanos;
+        }
+
         //Siguiente ID libre con el prefijo dado (P1, P2...)
         public static string SiguienteId(IEnumerable<Placement> placements, string prefijo)
         {

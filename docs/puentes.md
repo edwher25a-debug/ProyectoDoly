@@ -55,6 +55,10 @@ del eje) por cada curva, clotoide o curva vertical, sin partirlo cada pocos metr
 por el **punto adaptativo 1** de la familia, no por su origen. Si la familia no es adaptativa, se usa su origen.
 Una sección dibujada en el plano Centro (izquierda/derecha) se mira con X en el sentido del eje (derecha = -Y).
 
+**Tramo entre placements** (From/To de SOFiSTiK): el tablero va de un placement a otro; con *Un tablero por vano*
+(como el Repeater) se crea uno entre cada par de placements consecutivos, con una junta opcional repartida a cada lado.
+Cada tablero se llama "Tablero <eje> <P1-P2>".
+
 La sección se lee de la familia así: si tiene sólidos, se toma la cara plana del lado donde la familia es más delgada
 (una extrusión fina dibujada de frente); si no, las líneas cerradas. El punto de inserción (punto adaptativo 1, u origen) es el punto del eje sobre la rasante,
 X hacia la derecha mirando en el sentido del eje y Z hacia arriba. *Reflejar* invierte izquierda y derecha.

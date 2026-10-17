@@ -82,5 +82,29 @@ namespace ProyectoDoly.Puentes.Tests
             Assert.Equal(-6, derecha.Y, 9);
             Assert.Equal(50, izquierda.X, 9);
         }
+
+        [Fact]
+        public void Vanos_entre_placements_uno_o_uno_por_vano_con_junta()
+        {
+            List<Placement> lista = new List<Placement>
+            {
+                new Placement { Id = "E2", Estacion = 1100 },
+                new Placement { Id = "E1", Estacion = 1000 },
+                new Placement { Id = "P1", Estacion = 1030 },
+                new Placement { Id = "P2", Estacion = 1070 }
+            };
+
+            var uno = Assert.Single(PlacementsEje.Vanos(lista, "P1", "E2", false));
+            Assert.Equal(("P1-E2", 1030.0, 1100.0), uno);
+
+            var vanos = PlacementsEje.Vanos(lista, "E1", "E2", true, 0.1);
+            Assert.Equal(new[] { "E1-P1", "P1-P2", "P2-E2" }, vanos.Select(v => v.nombre).ToArray());
+            Assert.Equal(1000, vanos[0].desde, 9);
+            Assert.Equal(1029.95, vanos[0].hasta, 9);
+            Assert.Equal(1030.05, vanos[1].desde, 9);
+            Assert.Equal(1100, vanos[2].hasta, 9);
+
+            Assert.Throws<ArgumentException>(() => PlacementsEje.Vanos(lista, "E2", "E1", true));
+        }
     }
 }
