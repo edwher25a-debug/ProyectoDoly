@@ -68,6 +68,8 @@
         <Resource Include="Resources\Icons\Secciones32.png" />
         <Resource Include="Resources\Icons\Planta16.png" />
         <Resource Include="Resources\Icons\Planta32.png" />
+        <Resource Include="Resources\Icons\Cuantificar16.png" />
+        <Resource Include="Resources\Icons\Cuantificar32.png" />
     </ItemGroup>
 
 </Project>

@@ -50,6 +50,18 @@ Botón **Rejillas y estaciones** (como *Grids* y *Axis Stations* de SOFiSTiK):
 - Rejillas transversales al eje en los placements elegidos, con el ID del placement como nombre (y un prefijo opcional). Se pueden añadir también entre placements a una separación máxima y girarlas con el placement. La burbuja queda a la izquierda del eje.
 - Marcas de estación en la vista de planta activa: una línea de detalle transversal cada N m, con el texto de la estación a su izquierda, que siempre se lee derecho. Opcionalmente se marcan también el inicio y el fin del eje.
 
+## Cuantificar
+
+Botón **Cuantificar** (como *Quantification* de SOFiSTiK): escribe en parámetros compartidos de ejemplar (grupo Datos) los datos de cada elemento respecto al eje.
+Aplica a los elementos seleccionados (los grupos cuentan por sus miembros) o a todo lo creado con Puentes en el eje.
+
+- **DOLY Eje**, **DOLY Placement**: el ID si el elemento está en un placement, o "P1-P2" si ocupa ese vano.
+- **DOLY Estaciones** (texto), **DOLY Estación inicio**, **DOLY Estación fin**, **DOLY Longitud en eje**.
+- **DOLY Desfase**: el centro del elemento respecto al eje, positivo a la derecha.
+- **DOLY Volumen**: el de sus sólidos.
+
+Las estaciones salen de proyectar la geometría sobre el eje (`Puentes/Cuantificacion/ProyectorEje.cs`). Los parámetros tienen GUID fijos y se guardan en `%APPDATA%\ProyectoDoly\ParametrosPuente.txt`, así que las tablas sirven en cualquier proyecto. Vuelva a cuantificar si mueve el eje o los elementos.
+
 ## Superestructura
 
 1. Importar el eje (los ejes importados antes de esta versión deben importarse de nuevo: ahora el eje queda guardado en el modelo).

@@ -125,6 +125,18 @@ namespace ProyectoDoly
             };
 
             panelPuentes.AddItem(planta);
+
+            var cuantificar = new PushButtonData(nameof(CuantificarCmd), "Cuantificar",
+                Assembly.GetExecutingAssembly().Location, typeof(CuantificarCmd).FullName)
+            {
+                ToolTip = "Escribe estaciones, placement, desfase y volumen de los elementos del puente en parámetros compartidos.",
+                LongDescription = "Proyecta cada elemento sobre el eje y llena los parámetros DOLY (Eje, Placement, Estaciones, Estación inicio y fin, " +
+                                  "Longitud en eje, Desfase, Volumen) para usarlos en tablas de planificación.",
+                LargeImage = new BitmapImage(new Uri("pack://application:,,,/ProyectoDoly;component/Resources/Icons/Cuantificar32.png")),
+                Image = new BitmapImage(new Uri("pack://application:,,,/ProyectoDoly;component/Resources/Icons/Cuantificar16.png"))
+            };
+
+            panelPuentes.AddItem(cuantificar);
         }
     }
 }
