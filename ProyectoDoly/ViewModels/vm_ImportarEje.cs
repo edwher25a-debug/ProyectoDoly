@@ -149,8 +149,8 @@ namespace ProyectoDoly.ViewModels
         {
             OpenFileDialog dialogo = new OpenFileDialog
             {
-                Title = "LandXML exportado desde Civil 3D",
-                Filter = "LandXML (*.xml)|*.xml|Todos los archivos (*.*)|*.*"
+                Title = "LandXML exportado desde Civil 3D, o eje en JSON",
+                Filter = "Ejes (*.xml;*.json)|*.xml;*.json|LandXML (*.xml)|*.xml|Eje en JSON (*.json)|*.json|Todos los archivos (*.*)|*.*"
             };
             if (dialogo.ShowDialog() != true) return;
 
@@ -164,8 +164,10 @@ namespace ProyectoDoly.ViewModels
 
             try
             {
-                ArchivoLandXml archivo = LectorLandXml.Leer(ruta);
-                foreach (AlineamientoLandXml alineamiento in archivo.Alineamientos) Alineamientos.Add(alineamiento);
+                if (string.Equals(System.IO.Path.GetExtension(ruta), ".json", StringComparison.OrdinalIgnoreCase))
+                    Alineamientos.Add(AlineamientoLandXml.DesdeEje(JsonEje.Leer(System.IO.File.ReadAllText(ruta))));
+                else
+                    foreach (AlineamientoLandXml alineamiento in LectorLandXml.Leer(ruta).Alineamientos) Alineamientos.Add(alineamiento);
                 AlineamientoSelecc = Alineamientos.FirstOrDefault();
             }
             catch (Exception ex) when (ex is System.FormatException || ex is System.Xml.XmlException || ex is System.ArgumentException || ex is System.IO.IOException)
