@@ -66,6 +66,18 @@ namespace ProyectoDoly
 
             panelPuentes.AddItem(importarEje);
 
+            var placements = new PushButtonData(nameof(PlacementsCmd), "Place-\nments",
+                Assembly.GetExecutingAssembly().Location, typeof(PlacementsCmd).FullName)
+            {
+                ToolTip = "Agrega puntos con nombre a lo largo del eje (ejes de apoyo, juntas, inicio y fin de tablero).",
+                LongDescription = "Cada placement tiene ID, estación y giro respecto a la perpendicular al eje. Se pueden agregar uno a uno " +
+                                  "o cada cierta distancia, y se dibujan en el eje. Las pilas, estribos y vanos se colocan en ellos.",
+                LargeImage = new BitmapImage(new Uri("pack://application:,,,/ProyectoDoly;component/Resources/Icons/Placements32.png")),
+                Image = new BitmapImage(new Uri("pack://application:,,,/ProyectoDoly;component/Resources/Icons/Placements16.png"))
+            };
+
+            panelPuentes.AddItem(placements);
+
             var superestructura = new PushButtonData(nameof(SuperestructuraCmd), "Super-\nestructura",
                 Assembly.GetExecutingAssembly().Location, typeof(SuperestructuraCmd).FullName)
             {
