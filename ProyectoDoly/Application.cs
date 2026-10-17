@@ -89,6 +89,18 @@ namespace ProyectoDoly
             };
 
             panelPuentes.AddItem(superestructura);
+
+            var subestructura = new PushButtonData(nameof(SubestructuraCmd), "Sub-\nestructura",
+                Assembly.GetExecutingAssembly().Location, typeof(SubestructuraCmd).FullName)
+            {
+                ToolTip = "Coloca pilas y estribos en los placements del eje.",
+                LongDescription = "La familia (Modelo genérico adaptativo con un punto, como las de SOFiSTiK) se inserta por su punto adaptativo " +
+                                  "en el punto del eje de cada placement, orientada con el eje y su giro, con desplazamientos y altura hasta la fundación.",
+                LargeImage = new BitmapImage(new Uri("pack://application:,,,/ProyectoDoly;component/Resources/Icons/Subestructura32.png")),
+                Image = new BitmapImage(new Uri("pack://application:,,,/ProyectoDoly;component/Resources/Icons/Subestructura16.png"))
+            };
+
+            panelPuentes.AddItem(subestructura);
         }
     }
 }

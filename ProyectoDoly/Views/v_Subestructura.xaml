@@ -1,0 +1,140 @@
+<Window x:Class="ProyectoDoly.Views.v_Subestructura"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Subestructura" Width="900" Height="760" MinWidth="800" MinHeight="640"
+        WindowStartupLocation="CenterScreen" ResizeMode="CanResizeWithGrip"
+        Background="{DynamicResource Fondo}" Foreground="{DynamicResource Texto}">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/ProyectoDoly;component/Views/Estilos.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <BooleanToVisibilityConverter x:Key="VisibleSi"/>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <DockPanel>
+        <!--Encabezado-->
+        <Border DockPanel.Dock="Top" Background="{StaticResource Primario}" Padding="20,14">
+            <DockPanel>
+                <Image DockPanel.Dock="Left" Source="/ProyectoDoly;component/Resources/Icons/Subestructura32.png" Width="32" Height="32" Margin="0,0,12,0"/>
+                <StackPanel>
+                    <TextBlock Text="Subestructura" Foreground="White" FontSize="18" FontWeight="SemiBold"/>
+                    <TextBlock Text="Coloca pilas y estribos en los placements del eje, insertados por su punto adaptativo." Foreground="{StaticResource MenuTexto}" Margin="0,2,0,0"/>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <!--Botones-->
+        <Border DockPanel.Dock="Bottom" Background="White" BorderBrush="{StaticResource Borde}" BorderThickness="0,1,0,0" Padding="20,10">
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                    <Button Content="Cancelar" Background="{StaticResource TextoSuave}" Command="{Binding CancelarBT}" IsCancel="True"/>
+                    <Button Content="Colocar en el modelo" Background="{StaticResource Acento}" Command="{Binding CrearBT}" IsDefault="True" FontWeight="SemiBold"/>
+                </StackPanel>
+                <TextBlock Text="{Binding Error}" Foreground="{StaticResource Error}" VerticalAlignment="Center" TextWrapping="Wrap"/>
+            </DockPanel>
+        </Border>
+
+        <Grid Margin="20,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="20"/>
+                <ColumnDefinition Width="300"/>
+            </Grid.ColumnDefinitions>
+
+            <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <GroupBox Header="1  ·  Eje">
+                    <ComboBox ItemsSource="{Binding Ejes}" SelectedItem="{Binding EjeSelecc}"/>
+                </GroupBox>
+
+                <GroupBox Header="2  ·  Familia de pila o estribo">
+                    <StackPanel>
+                        <DockPanel>
+                            <Button DockPanel.Dock="Right" Content="Cargar familia…" Command="{Binding CargarFamiliaBT}"/>
+                            <ComboBox ItemsSource="{Binding Tipos}" SelectedItem="{Binding TipoSelecc}"/>
+                        </DockPanel>
+                        <TextBlock Text="{Binding Insercion}" FontWeight="SemiBold" Margin="0,4,0,0"/>
+                        <TextBlock Style="{StaticResource Ayuda}" Margin="0,2,0,0" TextWrapping="Wrap"
+                                   Text="Como en SOFiSTiK: Modelo genérico adaptativo con un punto adaptativo, que va al punto del eje en el placement. Ejes de la familia: X en el sentido del eje, Y a la izquierda, Z hacia arriba. Si la familia no es adaptativa, se usa su origen."/>
+                    </StackPanel>
+                </GroupBox>
+
+                <GroupBox Header="3  ·  Placements">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource Ayuda}" Margin="0,0,0,4" Text="Este eje no tiene placements. Créelos con el botón Placements."
+                                   Visibility="{Binding SinPlacements, Converter={StaticResource VisibleSi}}"/>
+                        <Border BorderBrush="{StaticResource Borde}" BorderThickness="1" Background="White" MaxHeight="170">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                <ItemsControl ItemsSource="{Binding Placements}" Margin="6,4">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <CheckBox IsChecked="{Binding Elegido}" Content="{Binding Texto}" Margin="0,2"/>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
+                        </Border>
+                        <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                            <Button Content="Todos" Command="{Binding TodosBT}"/>
+                            <Button Content="Ninguno" Background="{StaticResource TextoSuave}" Command="{Binding NingunoBT}"/>
+                        </StackPanel>
+                    </StackPanel>
+                </GroupBox>
+
+                <GroupBox Header="4  ·  Ubicación respecto al placement">
+                    <StackPanel>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="90"/>
+                                <ColumnDefinition Width="24"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="90"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                            </Grid.RowDefinitions>
+                            <TextBlock Text="Desplazar a la derecha (m)  " VerticalAlignment="Center" ToolTip="En el plano del placement. Negativo = hacia la izquierda."/>
+                            <TextBox Grid.Column="1" Text="{Binding DesplazamientoLateral, UpdateSourceTrigger=PropertyChanged}"/>
+                            <TextBlock Grid.Column="3" Text="Subir (m)  " VerticalAlignment="Center" ToolTip="Negativo = bajar respecto a la rasante (por ejemplo, el canto del tablero)."/>
+                            <TextBox Grid.Column="4" Text="{Binding DesplazamientoVertical, UpdateSourceTrigger=PropertyChanged}"/>
+                            <TextBlock Grid.Row="1" Text="Giro adicional (°)  " VerticalAlignment="Center" ToolTip="Se suma al giro del placement (+ antihorario en planta)."/>
+                            <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding GiroAdicional, UpdateSourceTrigger=PropertyChanged}"/>
+                        </Grid>
+                        <CheckBox IsChecked="{Binding SiempreVertical}" Content="Siempre vertical (sin inclinar con la pendiente de la rasante)" Margin="0,6,0,0"/>
+                    </StackPanel>
+                </GroupBox>
+
+                <GroupBox Header="5  ·  Altura">
+                    <StackPanel>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                            </Grid.RowDefinitions>
+                            <TextBlock Text="Parámetro de altura  " VerticalAlignment="Center"/>
+                            <ComboBox Grid.Column="1" ItemsSource="{Binding ParametrosAltura}" SelectedItem="{Binding ParametroAltura}"/>
+                            <TextBlock Grid.Row="1" Text="Cota de fundación (m)  " VerticalAlignment="Center"/>
+                            <TextBox Grid.Row="1" Grid.Column="1" Width="120" HorizontalAlignment="Left" Text="{Binding CotaFundacion, UpdateSourceTrigger=PropertyChanged}"/>
+                        </Grid>
+                        <TextBlock Style="{StaticResource Ayuda}" Margin="0,2,0,0" TextWrapping="Wrap"
+                                   Text="Cada pila recibe en ese parámetro la altura desde la cota de fundación hasta su punto de inserción. Solo aparecen parámetros de longitud de ejemplar."/>
+                    </StackPanel>
+                </GroupBox>
+            </StackPanel>
+            </ScrollViewer>
+
+            <!--Resumen-->
+            <GroupBox Grid.Column="2" Header="Vista previa" VerticalAlignment="Top">
+                <TextBlock Text="{Binding Resumen}" TextWrapping="Wrap" LineHeight="20"/>
+            </GroupBox>
+        </Grid>
+    </DockPanel>
+</Window>
