@@ -33,6 +33,16 @@ adicional), Y a la izquierda, Z arriba; con *Siempre vertical* desactivado se in
 derecha y hacia arriba en el plano del placement. Opcional: un parámetro de longitud de ejemplar recibe la altura desde
 una cota de fundación hasta el punto de inserción. Cálculo en `Puentes/Subestructura/UbicacionSubestructura.cs`.
 
+## Secciones
+
+Botón **Secciones**: crea vistas de sección transversal del eje (como *Sections* de SOFiSTiK).
+
+- Una sección en cada placement elegido, girada con el placement si se marca (apoyos esviados).
+- Secciones entre placements consecutivos: cada intervalo se divide en partes iguales que no pasan la separación dada. Se llaman "P1-P2 1", "P1-P2 2"...
+- Estaciones sueltas separadas por punto y coma (0+050; 0+125.5).
+- Cada vista mira en el sentido del eje, con la derecha del eje a la derecha, y se recorta con el ancho, la altura sobre y bajo la rasante y la profundidad indicados.
+- Las vistas se llaman "Sección {eje} {nombre} ({estación})" y quedan en el Navegador de proyectos.
+
 ## Superestructura
 
 1. Importar el eje (los ejes importados antes de esta versión deben importarse de nuevo: ahora el eje queda guardado en el modelo).
