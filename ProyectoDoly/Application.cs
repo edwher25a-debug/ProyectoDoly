@@ -101,6 +101,18 @@ namespace ProyectoDoly
             };
 
             panelPuentes.AddItem(subestructura);
+
+            var secciones = new PushButtonData(nameof(SeccionesCmd), "Secciones",
+                Assembly.GetExecutingAssembly().Location, typeof(SeccionesCmd).FullName)
+            {
+                ToolTip = "Crea vistas de sección transversal en los placements y estaciones del eje.",
+                LongDescription = "Una vista por placement, entre placements cada cierta distancia o en estaciones sueltas, " +
+                                  "mirando en el sentido del eje y giradas con el placement si se desea.",
+                LargeImage = new BitmapImage(new Uri("pack://application:,,,/ProyectoDoly;component/Resources/Icons/Secciones32.png")),
+                Image = new BitmapImage(new Uri("pack://application:,,,/ProyectoDoly;component/Resources/Icons/Secciones16.png"))
+            };
+
+            panelPuentes.AddItem(secciones);
         }
     }
 }

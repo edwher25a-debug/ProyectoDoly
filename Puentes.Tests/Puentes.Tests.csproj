@@ -19,6 +19,7 @@
         <Compile Include="..\ProyectoDoly\Puentes\LandXml\*.cs" Link="Puentes\LandXml\%(Filename)%(Extension)" />
         <Compile Include="..\ProyectoDoly\Puentes\Superestructura\*.cs" Link="Puentes\Superestructura\%(Filename)%(Extension)" />
         <Compile Include="..\ProyectoDoly\Puentes\Subestructura\*.cs" Link="Puentes\Subestructura\%(Filename)%(Extension)" />
+        <Compile Include="..\ProyectoDoly\Puentes\Planos\*.cs" Link="Puentes\Planos\%(Filename)%(Extension)" />
     </ItemGroup>
 
     <ItemGroup>

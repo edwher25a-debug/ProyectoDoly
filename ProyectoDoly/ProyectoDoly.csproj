@@ -64,6 +64,8 @@
         <Resource Include="Resources\Icons\Placements32.png" />
         <Resource Include="Resources\Icons\Subestructura16.png" />
         <Resource Include="Resources\Icons\Subestructura32.png" />
+        <Resource Include="Resources\Icons\Secciones16.png" />
+        <Resource Include="Resources\Icons\Secciones32.png" />
     </ItemGroup>
 
 </Project>
