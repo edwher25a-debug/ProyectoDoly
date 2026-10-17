@@ -91,3 +91,9 @@ Cada tablero se llama "Tablero <eje> <P1-P2>".
 La sección se lee de la familia así: si tiene sólidos, se toma la cara plana del lado donde la familia es más delgada
 (una extrusión fina dibujada de frente); si no, las líneas cerradas. El punto de inserción (punto adaptativo 1, u origen) es el punto del eje sobre la rasante,
 X hacia la derecha mirando en el sentido del eje y Z hacia arriba. *Reflejar* invierte izquierda y derecha.
+
+### Parapetos, barandas y otros componentes
+
+En el paso 4 de Superestructura, **Componente** elige qué se barre: Tablero, Parapeto, Baranda, Bordillo o Viga. El nombre se usa en el elemento, el grupo y los comentarios, por ejemplo "Parapeto Eje1 P1-P2 der".
+Con **A ambos lados del eje**, como los parapetos de SOFiSTiK, se crean dos: el de la derecha con el desplazamiento lateral dado, y el de la izquierda con la sección reflejada y el desplazamiento contrario.
+La familia del parapeto se dibuja como la del tablero (Modelo genérico adaptativo, lazo en el plano Centro izquierda/derecha), con su punto adaptativo en el punto de apoyo sobre el tablero. Sube el parapeto con "Subir" hasta la cota del borde.

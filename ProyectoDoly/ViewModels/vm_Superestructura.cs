@@ -157,6 +157,29 @@ namespace ProyectoDoly.ViewModels
             }
         }
 
+        //Tipo de componente y si se crea a ambos lados del eje (parapetos, barandas)
+        public string[] Componentes => OpcionesSuperestructura.Componentes;
+
+        private string componente = "Tablero";
+        public string Componente
+        {
+            get => componente;
+            set
+            {
+                if (SetProperty(ref componente, value ?? "Tablero")) Actualizar();
+            }
+        }
+
+        private bool ambosLados;
+        public bool AmbosLados
+        {
+            get => ambosLados;
+            set
+            {
+                if (SetProperty(ref ambosLados, value)) Actualizar();
+            }
+        }
+
         //3_Tramo y ubicacion de la seccion
         private string estacionInicial = "";
         public string EstacionInicial
@@ -552,11 +575,13 @@ namespace ProyectoDoly.ViewModels
                        $"Secciones: {(int)Math.Ceiling(longitud / pasoValor) + 1} o más (se añaden en cada cambio de tramo" +
                        (variables.Count > 0 ? " y en cada estación de los parámetros)" : ")");
             if (variables.Count > 0) Resumen += $"\nVariables: {string.Join(", ", variables.Select(v => v.Nombre))}";
-            if (vanos.Count > 1) Resumen += $"\nTableros: {vanos.Count} ({string.Join(", ", vanos.Select(v => v.nombre))})";
+            if (vanos.Count > 1) Resumen += $"\n{Componente}s: {vanos.Count} ({string.Join(", ", vanos.Select(v => v.nombre))})";
+            if (AmbosLados) Resumen += $"\nA ambos lados: derecha a {Texto(lateral)} m e izquierda reflejada a {Texto(-lateral)} m" + (Math.Abs(lateral) < 1e-9 ? " (¡ponga un desplazamiento lateral!)" : "");
 
             listo = new OpcionesSuperestructura
             {
                 Eje = eje,
+                Componente = Componente,
                 FamiliaAdaptativa = FamiliaAdaptativa,
                 Seccion = seccion,
                 Variables = variables,
@@ -580,13 +605,19 @@ namespace ProyectoDoly.ViewModels
             //Un tablero por tramo; con parametros variables se evalua la familia en cada estacion de su barrido
             Tableros.Clear();
             foreach ((string nombre, double desde, double hasta) in vanos)
+            foreach (bool izquierda in AmbosLados ? new[] { false, true } : new[] { false })
             {
-                OpcionesSuperestructura tablero = vanos.Count == 1 && nombre.Length == 0 ? listo : listo.ParaTramo(nombre, desde, hasta);
+                string Lado(string lado) => nombre.Length > 0 ? $"{nombre} {lado}" : lado;
+                OpcionesSuperestructura tablero = !AmbosLados
+                    ? (vanos.Count == 1 && nombre.Length == 0 ? listo : listo.ParaTramo(nombre, desde, hasta))
+                    : izquierda
+                        ? listo.ParaTramo(nombre, desde, hasta).Reflejada(Lado("izq"))
+                        : listo.ParaTramo(Lado("der"), desde, hasta);
                 if (tablero.Variables.Count > 0 && lector != null)
                 {
                     try
                     {
-                        tablero.PorEstacion = SeccionesPorEstacion.Calcular(lector, tablero.Estaciones(), tablero.Variables, Espejo);
+                        tablero.PorEstacion = SeccionesPorEstacion.Calcular(lector, tablero.Estaciones(), tablero.Variables, Espejo != izquierda);
                     }
                     catch (Exception ex) when (ex is InvalidOperationException || ex is ArgumentException || ex is Autodesk.Revit.Exceptions.ApplicationException)
                     {

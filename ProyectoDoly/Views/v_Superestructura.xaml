@@ -136,6 +136,12 @@
                         <TextBlock Grid.Row="2" Grid.Column="3" Text="Subir (m)  " VerticalAlignment="Center" ToolTip="Negativo = bajar la sección respecto a la rasante (por ejemplo, el espesor del pavimento)."/>
                         <TextBox Grid.Row="2" Grid.Column="4" Text="{Binding DesplazamientoVertical, UpdateSourceTrigger=PropertyChanged}"/>
                     </Grid>
+                    <DockPanel Margin="0,8,0,0">
+                        <TextBlock Text="Componente  " VerticalAlignment="Center" ToolTip="Nombre del elemento creado: Tablero, Parapeto, Baranda..."/>
+                        <ComboBox Width="140" HorizontalAlignment="Left" ItemsSource="{Binding Componentes}" SelectedItem="{Binding Componente}"/>
+                        <CheckBox IsChecked="{Binding AmbosLados}" Content="A ambos lados del eje" VerticalAlignment="Center" Margin="16,0,0,0"
+                                  ToolTip="Como los parapetos de SOFiSTiK: a la derecha con el desplazamiento dado y a la izquierda reflejado, con el desplazamiento contrario."/>
+                    </DockPanel>
                     </StackPanel>
                 </GroupBox>
 
