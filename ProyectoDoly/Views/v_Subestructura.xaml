@@ -88,7 +88,7 @@
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="90"/>
+                                <ColumnDefinition Width="140"/>
                                 <ColumnDefinition Width="24"/>
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="90"/>
@@ -97,7 +97,7 @@
                                 <RowDefinition/>
                                 <RowDefinition/>
                             </Grid.RowDefinitions>
-                            <TextBlock Text="Desplazar a la derecha (m)  " VerticalAlignment="Center" ToolTip="En el plano del placement. Negativo = hacia la izquierda."/>
+                            <TextBlock Text="Desplazar a la derecha (m)  " VerticalAlignment="Center" ToolTip="En el plano del placement. Negativo = hacia la izquierda. Varios valores con punto y coma (-4.5; 0; 4.5) = una fila de ejemplares por placement, como diafragmas entre vigas."/>
                             <TextBox Grid.Column="1" Text="{Binding DesplazamientoLateral, UpdateSourceTrigger=PropertyChanged}"/>
                             <TextBlock Grid.Column="3" Text="Subir (m)  " VerticalAlignment="Center" ToolTip="Negativo = bajar respecto a la rasante (por ejemplo, el canto del tablero)."/>
                             <TextBox Grid.Column="4" Text="{Binding DesplazamientoVertical, UpdateSourceTrigger=PropertyChanged}"/>
