@@ -12,6 +12,10 @@ namespace ProyectoDoly.Puentes
         public List<Placement> Placements { get; set; } = new List<Placement>();
         public OpcionesUbicacion Ubicacion { get; set; } = new OpcionesUbicacion();
 
+        //Varios desplazamientos laterales = una fila de ejemplares por placement (diafragmas entre vigas, pilas multiples,
+        //como Cross Member Array de SOFiSTiK). Vacio = solo Ubicacion.DesplazamientoLateral
+        public List<double> Laterales { get; set; } = new List<double>();
+
         //Parametro de longitud que recibe la altura desde la cota de fundacion (null = no se toca)
         public string? ParametroAltura { get; set; }
         public double CotaFundacion { get; set; }
@@ -78,9 +82,18 @@ namespace ProyectoDoly.Puentes
                 transaccion.Start();
                 if (!opciones.Tipo.IsActive) opciones.Tipo.Activate();
 
+                List<double> laterales = opciones.Laterales.Count > 0 ? opciones.Laterales : new List<double> { opciones.Ubicacion.DesplazamientoLateral };
                 foreach (Placement placement in opciones.Placements)
+                foreach (double lateral in laterales)
                 {
-                    Ubicacion3 u = UbicacionSubestructura.Calcular(eje, placement, opciones.Ubicacion);
+                    OpcionesUbicacion ubicacion = new OpcionesUbicacion
+                    {
+                        DesplazamientoLateral = lateral,
+                        DesplazamientoVertical = opciones.Ubicacion.DesplazamientoVertical,
+                        GiroAdicional = opciones.Ubicacion.GiroAdicional,
+                        SiempreVertical = opciones.Ubicacion.SiempreVertical
+                    };
+                    Ubicacion3 u = UbicacionSubestructura.Calcular(eje, placement, ubicacion);
                     XYZ origen = transformacion.OfPoint(CreadorEje.APies(u.Origen));
                     XYZ x = transformacion.OfVector(new XYZ(u.EjeX.X, u.EjeX.Y, u.EjeX.Z)).Normalize();
                     XYZ z = transformacion.OfVector(new XYZ(u.EjeZ.X, u.EjeZ.Y, u.EjeZ.Z)).Normalize();
@@ -102,9 +115,9 @@ namespace ProyectoDoly.Puentes
                     }
 
                     ejemplar.get_Parameter(BuiltInParameter.ALL_MODEL_INSTANCE_COMMENTS)?
-                        .Set($"Subestructura | Eje {eje.Nombre} | {placement.Id} | {Eje.FormatoEstacion(placement.Estacion)}");
+                        .Set($"Subestructura | Eje {eje.Nombre} | {placement.Id} | {Eje.FormatoEstacion(placement.Estacion)}" + (laterales.Count > 1 ? $" | derecha {lateral:0.###} m" : ""));
                     resultado.Ids.Add(ejemplar.Id);
-                    lineas.Add($"{placement.Id}   {Eje.FormatoEstacion(placement.Estacion)}   cota {u.Origen.Z:F2}{altura}");
+                    lineas.Add($"{placement.Id}{(laterales.Count > 1 ? $" ({lateral:0.##} m)" : "")}   {Eje.FormatoEstacion(placement.Estacion)}   cota {u.Origen.Z:F2}{altura}");
                 }
 
                 if (transaccion.Commit() != TransactionStatus.Committed)

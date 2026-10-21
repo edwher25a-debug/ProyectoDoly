@@ -53,6 +53,11 @@ adicional), Y a la izquierda, Z arriba; con *Siempre vertical* desactivado se in
 derecha y hacia arriba en el plano del placement. Opcional: un parámetro de longitud de ejemplar recibe la altura desde
 una cota de fundación hasta el punto de inserción. Cálculo en `Puentes/Subestructura/UbicacionSubestructura.cs`.
 
+### Vigas y diafragmas
+
+- **Vigas**, como el Girder Layout de SOFiSTiK: cree un eje secundario por cada viga (por ejemplo a -4.5, -1.5, 1.5 y 4.5 m). Después, en Superestructura, barra sobre cada uno la familia de la viga con Componente "Viga".
+- **Diafragmas**, como el Cross Member Array de SOFiSTiK: en Subestructura escriba varios desplazamientos a la derecha separados por punto y coma (-3; 0; 3). En cada placement se coloca una fila de ejemplares, uno por desplazamiento.
+
 ## Secciones
 
 Botón **Secciones**: crea vistas de sección transversal del eje (como *Sections* de SOFiSTiK).

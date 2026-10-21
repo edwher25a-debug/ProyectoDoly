@@ -269,11 +269,22 @@ namespace ProyectoDoly.ViewModels
 
         private void Validar(EjeGuardado eje)
         {
-            if (!LeerNumero(DesplazamientoLateral, out double lateral) || !LeerNumero(DesplazamientoVertical, out double vertical) || !LeerNumero(GiroAdicional, out double giro))
+            //Uno o varios desplazamientos a la derecha separados por punto y coma (una fila de ejemplares por placement)
+            List<double> laterales = new List<double>();
+            bool lateralesOk = true;
+            foreach (string parte in DesplazamientoLateral.Split(';').Select(p => p.Trim()).Where(p => p.Length > 0))
             {
-                MostrarError("Los desplazamientos y el giro deben ser números (0 = sin cambio).");
+                if (LeerNumero(parte, out double valor)) laterales.Add(valor);
+                else lateralesOk = false;
+            }
+
+            if (!lateralesOk || laterales.Count == 0 || !LeerNumero(DesplazamientoVertical, out double vertical) || !LeerNumero(GiroAdicional, out double giro))
+            {
+                MostrarError("Los desplazamientos y el giro deben ser números (0 = sin cambio). A la derecha admite varios valores con punto y coma: -4.5; 0; 4.5");
                 return;
             }
+
+            double lateral = laterales[0];
 
             bool conAltura = ParametroAltura != SinParametro;
             double fundacion = 0;
@@ -300,13 +311,14 @@ namespace ProyectoDoly.ViewModels
 
             //Vista previa: cota del punto de insercion y altura de cada pila
             List<string> lineas = new List<string>();
+            if (laterales.Count > 1) lineas.Add($"{laterales.Count} por placement, a {string.Join("; ", laterales.Select(l => l.ToString("0.##", CultureInfo.InvariantCulture)))} m");
             foreach (Placement p in elegidos.Take(12))
             {
                 Ubicacion3 u = UbicacionSubestructura.Calcular(eje.Eje, p, ubicacion);
                 lineas.Add($"{p.Id}:  cota {u.Origen.Z:F2} m" + (conAltura ? $"  ·  altura {UbicacionSubestructura.Altura(u, fundacion):F2} m" : ""));
             }
 
-            Resumen = $"{elegidos.Count} ejemplares de {TipoSelecc!.Nombre}\n" + string.Join("\n", lineas) + (elegidos.Count > 12 ? $"\n(y {elegidos.Count - 12} más)" : "");
+            Resumen = $"{elegidos.Count * laterales.Count} ejemplares de {TipoSelecc!.Nombre}\n" + string.Join("\n", lineas) + (elegidos.Count > 12 ? $"\n(y {elegidos.Count - 12} más)" : "");
 
             listo = new OpcionesSubestructura
             {
@@ -314,6 +326,7 @@ namespace ProyectoDoly.ViewModels
                 Tipo = TipoSelecc.Tipo,
                 Placements = elegidos,
                 Ubicacion = ubicacion,
+                Laterales = laterales.Count > 1 ? laterales : new List<double>(),
                 ParametroAltura = conAltura ? ParametroAltura : null,
                 CotaFundacion = fundacion
             };
