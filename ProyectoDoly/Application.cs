@@ -113,6 +113,18 @@ namespace ProyectoDoly
             };
 
             panelPuentes.AddItem(secciones);
+
+            var planta = new PushButtonData(nameof(PlantaCmd), "Rejillas y\nestaciones",
+                Assembly.GetExecutingAssembly().Location, typeof(PlantaCmd).FullName)
+            {
+                ToolTip = "Crea rejillas en los placements y marca las estaciones del eje en la planta.",
+                LongDescription = "Rejillas transversales al eje con el nombre del placement (y entre placements si se desea), " +
+                                  "y rayas con el texto de la estación cada cierta distancia en la vista de planta activa.",
+                LargeImage = new BitmapImage(new Uri("pack://application:,,,/ProyectoDoly;component/Resources/Icons/Planta32.png")),
+                Image = new BitmapImage(new Uri("pack://application:,,,/ProyectoDoly;component/Resources/Icons/Planta16.png"))
+            };
+
+            panelPuentes.AddItem(planta);
         }
     }
 }

@@ -43,6 +43,13 @@ Botón **Secciones**: crea vistas de sección transversal del eje (como *Section
 - Cada vista mira en el sentido del eje, con la derecha del eje a la derecha, y se recorta con el ancho, la altura sobre y bajo la rasante y la profundidad indicados.
 - Las vistas se llaman "Sección {eje} {nombre} ({estación})" y quedan en el Navegador de proyectos.
 
+## Rejillas y estaciones
+
+Botón **Rejillas y estaciones** (como *Grids* y *Axis Stations* de SOFiSTiK):
+
+- Rejillas transversales al eje en los placements elegidos, con el ID del placement como nombre (y un prefijo opcional). Se pueden añadir también entre placements a una separación máxima y girarlas con el placement. La burbuja queda a la izquierda del eje.
+- Marcas de estación en la vista de planta activa: una línea de detalle transversal cada N m, con el texto de la estación a su izquierda, que siempre se lee derecho. Opcionalmente se marcan también el inicio y el fin del eje.
+
 ## Superestructura
 
 1. Importar el eje (los ejes importados antes de esta versión deben importarse de nuevo: ahora el eje queda guardado en el modelo).
