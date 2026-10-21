@@ -24,6 +24,11 @@ del plano respecto a la perpendicular al eje (0 = apoyo recto). Se agregan uno a
 (`Puentes/Ejes/PlacementsEje.cs`), se guardan con el eje (líneas `L|` del serializador) y se dibujan en él: una línea de
 12 m en su plano y un poste vertical de 3 m. Son la referencia para colocar pilas y estribos y cortar el tablero en vanos.
 
+## Exportar e importar el eje en JSON
+
+Botón **Exportar eje**: guarda el eje seleccionado (o el único del modelo) en un JSON abierto con la planta (tramos), la rasante (PIV), los placements y las variables. **Importar eje** también lee ese archivo .json.
+El formato está documentado en `Puentes/Ejes/JsonEje.cs`: metros, rumbos en radianes desde el Este en sentido antihorario y curvatura positiva hacia la izquierda.
+
 ## Eje secundario
 
 Botón **Eje secundario**, como los ejes secundarios de SOFiSTiK: crea un eje nuevo desplazado del principal, por ejemplo un borde de tablero, el eje de una viga o un ramal paralelo.

@@ -149,6 +149,18 @@ namespace ProyectoDoly
             };
 
             panelPuentes.AddItem(cuantificar);
+
+            var exportarEje = new PushButtonData(nameof(ExportarEjeCmd), "Exportar\neje",
+                Assembly.GetExecutingAssembly().Location, typeof(ExportarEjeCmd).FullName)
+            {
+                ToolTip = "Guarda el eje seleccionado en JSON (planta, rasante, placements y variables).",
+                LongDescription = "Formato abierto y documentado para llevar el eje a otro proyecto u otro programa. " +
+                                  "Se vuelve a leer con Importar eje, eligiendo el archivo .json.",
+                LargeImage = new BitmapImage(new Uri("pack://application:,,,/ProyectoDoly;component/Resources/Icons/ExportarEje32.png")),
+                Image = new BitmapImage(new Uri("pack://application:,,,/ProyectoDoly;component/Resources/Icons/ExportarEje16.png"))
+            };
+
+            panelPuentes.AddItem(exportarEje);
         }
     }
 }
