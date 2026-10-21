@@ -76,7 +76,7 @@ namespace ProyectoDoly.Commands
                 uidoc.Selection.SetElementIds(creados);
                 TaskDialog.Show("Superestructura", tableros.Count == 1
                     ? resumenes[0]
-                    : $"{tableros.Count} tableros creados, uno por vano:\n" + string.Join("\n", tableros.Select(t =>
+                    : $"{tableros.Count} elementos creados:\n" + string.Join("\n", tableros.Select(t =>
                           $"{t.NombreTablero}   {Ejes.Eje.FormatoEstacion(t.Barrido.EstacionInicial)} a {Ejes.Eje.FormatoEstacion(t.Barrido.EstacionFinal)}")));
                 return Result.Succeeded;
             }

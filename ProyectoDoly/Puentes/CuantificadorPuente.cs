@@ -18,17 +18,17 @@ namespace ProyectoDoly.Puentes
     {
         private const int MaximoPuntos = 3000;
 
-        //Elementos que las herramientas de Puentes crearon en este eje (por su comentario)
+        //Elementos que las herramientas de Puentes crearon en este eje (tableros, parapetos, pilas...), por su comentario
         public static List<ElementId> CreadosEnEje(Document doc, Eje eje)
         {
-            string tablero = $"Tablero {eje.Nombre}";
+            string[] componentes = OpcionesSuperestructura.Componentes.Select(c => $"{c} {eje.Nombre} ").ToArray();
             string marca = $"| Eje {eje.Nombre} |";
             return new FilteredElementCollector(doc).WhereElementIsNotElementType()
                 .Where(e => e is FamilyInstance || e is DirectShape)
                 .Where(e =>
                 {
                     string c = e.get_Parameter(BuiltInParameter.ALL_MODEL_INSTANCE_COMMENTS)?.AsString() ?? "";
-                    return c.StartsWith(tablero + " ", StringComparison.Ordinal) || c.Contains(marca);
+                    return componentes.Any(p => c.StartsWith(p, StringComparison.Ordinal)) || c.Contains(marca);
                 })
                 .Select(e => e.Id).ToList();
         }
