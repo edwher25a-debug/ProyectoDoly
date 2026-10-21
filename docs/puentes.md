@@ -24,6 +24,17 @@ del plano respecto a la perpendicular al eje (0 = apoyo recto). Se agregan uno a
 (`Puentes/Ejes/PlacementsEje.cs`), se guardan con el eje (líneas `L|` del serializador) y se dibujan en él: una línea de
 12 m en su plano y un poste vertical de 3 m. Son la referencia para colocar pilas y estribos y cortar el tablero en vanos.
 
+## Eje secundario
+
+Botón **Eje secundario**, como los ejes secundarios de SOFiSTiK: crea un eje nuevo desplazado del principal, por ejemplo un borde de tablero, el eje de una viga o un ramal paralelo.
+
+- El desplazamiento a la derecha puede ser constante, o variable con una tabla "estación = desplazamiento" que interpola en línea recta entre los puntos. También hay un desplazamiento en altura respecto a la rasante.
+- Si el desplazamiento es constante, las rectas y los arcos salen exactos: una recta paralela y un arco de radio R ± d. Las clotoides y los desplazamientos variables se aproximan con clotoides de hasta 10 m, continuas en posición y rumbo.
+- El eje secundario tiene su propio estacionamiento, que es su longitud, y empieza en la estación inicial del principal. Los placements, las variables y los PIV de la rasante pasan a su estación equivalente.
+- Es un eje como cualquier otro, así que sirve en Superestructura, Subestructura, Secciones, Rejillas y Cuantificar.
+
+Código en `Puentes/Ejes/EjeSecundario.cs`.
+
 ## Subestructura
 
 Botón **Subestructura** (como Substructure de SOFiSTiK): coloca una familia de pila o estribo en los placements elegidos.
