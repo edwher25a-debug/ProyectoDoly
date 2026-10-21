@@ -66,6 +66,41 @@ namespace ProyectoDoly
 
             panelPuentes.AddItem(importarEje);
 
+            var placements = new PushButtonData(nameof(PlacementsCmd), "Place-\nments",
+                Assembly.GetExecutingAssembly().Location, typeof(PlacementsCmd).FullName)
+            {
+                ToolTip = "Agrega puntos con nombre a lo largo del eje (ejes de apoyo, juntas, inicio y fin de tablero).",
+                LongDescription = "Cada placement tiene ID, estación y giro respecto a la perpendicular al eje. Se pueden agregar uno a uno " +
+                                  "o cada cierta distancia, y se dibujan en el eje. Las pilas, estribos y vanos se colocan en ellos.",
+                LargeImage = new BitmapImage(new Uri("pack://application:,,,/ProyectoDoly;component/Resources/Icons/Placements32.png")),
+                Image = new BitmapImage(new Uri("pack://application:,,,/ProyectoDoly;component/Resources/Icons/Placements16.png"))
+            };
+
+            panelPuentes.AddItem(placements);
+
+            var ejeSecundario = new PushButtonData(nameof(EjeSecundarioCmd), "Eje\nsecundario",
+                Assembly.GetExecutingAssembly().Location, typeof(EjeSecundarioCmd).FullName)
+            {
+                ToolTip = "Crea un eje desplazado del principal: bordes de tablero, ejes de vigas o ramales paralelos.",
+                LongDescription = "Desplazamiento a la derecha constante o variable entre estaciones, y en altura respecto a la rasante. " +
+                                  "El nuevo eje lleva los placements del principal y sirve para todas las herramientas de Puentes.",
+                LargeImage = new BitmapImage(new Uri("pack://application:,,,/ProyectoDoly;component/Resources/Icons/EjeSecundario32.png")),
+                Image = new BitmapImage(new Uri("pack://application:,,,/ProyectoDoly;component/Resources/Icons/EjeSecundario16.png"))
+            };
+
+            panelPuentes.AddItem(ejeSecundario);
+
+            var invertirEje = new PushButtonData(nameof(InvertirEjeCmd), "Invertir\neje",
+                Assembly.GetExecutingAssembly().Location, typeof(InvertirEjeCmd).FullName)
+            {
+                ToolTip = "Invierte el sentido del eje seleccionado: el fin pasa a ser el inicio.",
+                LongDescription = "Las estaciones conservan su rango; placements, rasante y variables se trasladan a su nueva estación.",
+                LargeImage = new BitmapImage(new Uri("pack://application:,,,/ProyectoDoly;component/Resources/Icons/InvertirEje32.png")),
+                Image = new BitmapImage(new Uri("pack://application:,,,/ProyectoDoly;component/Resources/Icons/InvertirEje16.png"))
+            };
+
+            panelPuentes.AddItem(invertirEje);
+
             var superestructura = new PushButtonData(nameof(SuperestructuraCmd), "Super-\nestructura",
                 Assembly.GetExecutingAssembly().Location, typeof(SuperestructuraCmd).FullName)
             {
@@ -77,6 +112,66 @@ namespace ProyectoDoly
             };
 
             panelPuentes.AddItem(superestructura);
+
+            var subestructura = new PushButtonData(nameof(SubestructuraCmd), "Sub-\nestructura",
+                Assembly.GetExecutingAssembly().Location, typeof(SubestructuraCmd).FullName)
+            {
+                ToolTip = "Coloca pilas y estribos en los placements del eje.",
+                LongDescription = "La familia (Modelo genérico adaptativo con un punto, como las de SOFiSTiK) se inserta por su punto adaptativo " +
+                                  "en el punto del eje de cada placement, orientada con el eje y su giro, con desplazamientos y altura hasta la fundación.",
+                LargeImage = new BitmapImage(new Uri("pack://application:,,,/ProyectoDoly;component/Resources/Icons/Subestructura32.png")),
+                Image = new BitmapImage(new Uri("pack://application:,,,/ProyectoDoly;component/Resources/Icons/Subestructura16.png"))
+            };
+
+            panelPuentes.AddItem(subestructura);
+
+            var secciones = new PushButtonData(nameof(SeccionesCmd), "Secciones",
+                Assembly.GetExecutingAssembly().Location, typeof(SeccionesCmd).FullName)
+            {
+                ToolTip = "Crea vistas de sección transversal en los placements y estaciones del eje.",
+                LongDescription = "Una vista por placement, entre placements cada cierta distancia o en estaciones sueltas, " +
+                                  "mirando en el sentido del eje y giradas con el placement si se desea.",
+                LargeImage = new BitmapImage(new Uri("pack://application:,,,/ProyectoDoly;component/Resources/Icons/Secciones32.png")),
+                Image = new BitmapImage(new Uri("pack://application:,,,/ProyectoDoly;component/Resources/Icons/Secciones16.png"))
+            };
+
+            panelPuentes.AddItem(secciones);
+
+            var planta = new PushButtonData(nameof(PlantaCmd), "Rejillas y\nestaciones",
+                Assembly.GetExecutingAssembly().Location, typeof(PlantaCmd).FullName)
+            {
+                ToolTip = "Crea rejillas en los placements y marca las estaciones del eje en la planta.",
+                LongDescription = "Rejillas transversales al eje con el nombre del placement (y entre placements si se desea), " +
+                                  "y rayas con el texto de la estación cada cierta distancia en la vista de planta activa.",
+                LargeImage = new BitmapImage(new Uri("pack://application:,,,/ProyectoDoly;component/Resources/Icons/Planta32.png")),
+                Image = new BitmapImage(new Uri("pack://application:,,,/ProyectoDoly;component/Resources/Icons/Planta16.png"))
+            };
+
+            panelPuentes.AddItem(planta);
+
+            var cuantificar = new PushButtonData(nameof(CuantificarCmd), "Cuantificar",
+                Assembly.GetExecutingAssembly().Location, typeof(CuantificarCmd).FullName)
+            {
+                ToolTip = "Escribe estaciones, placement, desfase y volumen de los elementos del puente en parámetros compartidos.",
+                LongDescription = "Proyecta cada elemento sobre el eje y llena los parámetros DOLY (Eje, Placement, Estaciones, Estación inicio y fin, " +
+                                  "Longitud en eje, Desfase, Volumen) para usarlos en tablas de planificación.",
+                LargeImage = new BitmapImage(new Uri("pack://application:,,,/ProyectoDoly;component/Resources/Icons/Cuantificar32.png")),
+                Image = new BitmapImage(new Uri("pack://application:,,,/ProyectoDoly;component/Resources/Icons/Cuantificar16.png"))
+            };
+
+            panelPuentes.AddItem(cuantificar);
+
+            var exportarEje = new PushButtonData(nameof(ExportarEjeCmd), "Exportar\neje",
+                Assembly.GetExecutingAssembly().Location, typeof(ExportarEjeCmd).FullName)
+            {
+                ToolTip = "Guarda el eje seleccionado en JSON (planta, rasante, placements y variables).",
+                LongDescription = "Formato abierto y documentado para llevar el eje a otro proyecto u otro programa. " +
+                                  "Se vuelve a leer con Importar eje, eligiendo el archivo .json.",
+                LargeImage = new BitmapImage(new Uri("pack://application:,,,/ProyectoDoly;component/Resources/Icons/ExportarEje32.png")),
+                Image = new BitmapImage(new Uri("pack://application:,,,/ProyectoDoly;component/Resources/Icons/ExportarEje16.png"))
+            };
+
+            panelPuentes.AddItem(exportarEje);
         }
     }
 }

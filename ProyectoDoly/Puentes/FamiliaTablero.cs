@@ -50,7 +50,7 @@ namespace ProyectoDoly.Puentes
 
                     if (material != ElementId.InvalidElementId) ejemplar.LookupParameter(NombreMaterial)?.Set(material);
                     ejemplar.get_Parameter(BuiltInParameter.ALL_MODEL_INSTANCE_COMMENTS)?
-                        .Set($"Tablero {eje.Nombre} | tramo {k + 1} | {Eje.FormatoEstacion(enEstacion[k])} a {Eje.FormatoEstacion(enEstacion[k + 1])}" +
+                        .Set($"{opciones.NombreTablero} | tramo {k + 1} | {Eje.FormatoEstacion(enEstacion[k])} a {Eje.FormatoEstacion(enEstacion[k + 1])}" +
                              ValoresTramo(opciones.Variables, enEstacion[k], enEstacion[k + 1]));
                     ejemplares.Add(ejemplar.Id);
                 }
@@ -62,7 +62,7 @@ namespace ProyectoDoly.Puentes
                 try
                 {
                     Group grupo = doc.Create.NewGroup(ejemplares);
-                    grupo.GroupType.Name = NombreLibre(doc, $"Tablero {eje.Nombre}");
+                    grupo.GroupType.Name = NombreLibre(doc, opciones.NombreTablero);
                     seleccion = grupo.Id;
                 }
                 catch (Autodesk.Revit.Exceptions.ApplicationException)

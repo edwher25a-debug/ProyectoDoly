@@ -9,7 +9,8 @@ namespace ProyectoDoly.Puentes.Ejes
     /// <summary>
     ///     Guarda el eje en texto para que viaje dentro del modelo de Revit (el tablero lo lee sin volver al LandXML).
     ///     Una linea por dato, campos separados por "|" y numeros en formato invariante:
-    ///     EJE|nombre / H|estacionInicial / E|tipo|x|y|rumbo|longitud|k0|k1 / V|nombre / P|estacion|cota|curva
+    ///     EJE|nombre / H|estacionInicial / E|tipo|x|y|rumbo|longitud|k0|k1 / V|nombre / P|estacion|cota|curva /
+    ///     L|id|estacion|giro (placements) / M|marcasCada. Las lineas desconocidas se ignoran (versiones anteriores las leen igual)
     /// </summary>
     public static class SerializadorEje
     {
@@ -33,6 +34,10 @@ namespace ProyectoDoly.Puentes.Ejes
                     texto.AppendLine($"P|{Num(p.Estacion)}|{Num(p.Cota)}|{Num(p.LongitudCurva)}");
             }
 
+            foreach (Placement p in eje.Placements)
+                texto.AppendLine($"L|{Uri.EscapeDataString(p.Id)}|{Num(p.Estacion)}|{Num(p.Rotacion)}");
+            texto.AppendLine($"M|{Num(eje.MarcasCada)}");
+
             return texto.ToString();
         }
 
@@ -47,6 +52,8 @@ namespace ProyectoDoly.Puentes.Ejes
             string? nombreRasante = null;
             List<ElementoHorizontal> elementos = new List<ElementoHorizontal>();
             List<PuntoVertical> piv = new List<PuntoVertical>();
+            List<Placement> placements = new List<Placement>();
+            double marcas = 20;
 
             foreach (string linea in lineas.Skip(1))
             {
@@ -70,11 +77,19 @@ namespace ProyectoDoly.Puentes.Ejes
                     case "P":
                         piv.Add(new PuntoVertical(Leer(c, 1), Leer(c, 2), Leer(c, 3)));
                         break;
+                    case "L":
+                        placements.Add(new Placement { Id = Uri.UnescapeDataString(c[1]), Estacion = Leer(c, 2), Rotacion = c.Length > 3 ? Leer(c, 3) : 0 });
+                        break;
+                    case "M":
+                        marcas = Leer(c, 1);
+                        break;
                 }
             }
 
             PerfilVertical? rasante = nombreRasante != null ? new PerfilVertical(nombreRasante, piv) : null;
-            return new Eje(nombre, new AlineamientoHorizontal(elementos, estacionInicial), rasante);
+            Eje eje = new Eje(nombre, new AlineamientoHorizontal(elementos, estacionInicial), rasante) { MarcasCada = marcas };
+            eje.Placements.AddRange(placements);
+            return eje;
         }
 
         //"R" conserva todos los decimales: el eje leido es identico al guardado

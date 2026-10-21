@@ -60,6 +60,22 @@
         <Resource Include="Resources\Icons\ImportarEje32.png" />
         <Resource Include="Resources\Icons\Superestructura16.png" />
         <Resource Include="Resources\Icons\Superestructura32.png" />
+        <Resource Include="Resources\Icons\Placements16.png" />
+        <Resource Include="Resources\Icons\Placements32.png" />
+        <Resource Include="Resources\Icons\Subestructura16.png" />
+        <Resource Include="Resources\Icons\Subestructura32.png" />
+        <Resource Include="Resources\Icons\Secciones16.png" />
+        <Resource Include="Resources\Icons\Secciones32.png" />
+        <Resource Include="Resources\Icons\Planta16.png" />
+        <Resource Include="Resources\Icons\Planta32.png" />
+        <Resource Include="Resources\Icons\Cuantificar16.png" />
+        <Resource Include="Resources\Icons\Cuantificar32.png" />
+        <Resource Include="Resources\Icons\EjeSecundario16.png" />
+        <Resource Include="Resources\Icons\EjeSecundario32.png" />
+        <Resource Include="Resources\Icons\ExportarEje16.png" />
+        <Resource Include="Resources\Icons\ExportarEje32.png" />
+        <Resource Include="Resources\Icons\InvertirEje16.png" />
+        <Resource Include="Resources\Icons\InvertirEje32.png" />
     </ItemGroup>
 
 </Project>

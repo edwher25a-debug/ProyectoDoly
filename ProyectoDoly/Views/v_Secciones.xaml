@@ -1,0 +1,132 @@
+<Window x:Class="ProyectoDoly.Views.v_Secciones"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Secciones" Width="900" Height="760" MinWidth="800" MinHeight="640"
+        WindowStartupLocation="CenterScreen" ResizeMode="CanResizeWithGrip"
+        Background="{DynamicResource Fondo}" Foreground="{DynamicResource Texto}">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/ProyectoDoly;component/Views/Estilos.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <BooleanToVisibilityConverter x:Key="VisibleSi"/>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <DockPanel>
+        <!--Encabezado-->
+        <Border DockPanel.Dock="Top" Background="{StaticResource Primario}" Padding="20,14">
+            <DockPanel>
+                <Image DockPanel.Dock="Left" Source="/ProyectoDoly;component/Resources/Icons/Secciones32.png" Width="32" Height="32" Margin="0,0,12,0"/>
+                <StackPanel>
+                    <TextBlock Text="Secciones" Foreground="White" FontSize="18" FontWeight="SemiBold"/>
+                    <TextBlock Text="Crea vistas de sección transversal en los placements y estaciones del eje." Foreground="{StaticResource MenuTexto}" Margin="0,2,0,0"/>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <!--Botones-->
+        <Border DockPanel.Dock="Bottom" Background="White" BorderBrush="{StaticResource Borde}" BorderThickness="0,1,0,0" Padding="20,10">
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                    <Button Content="Cancelar" Background="{StaticResource TextoSuave}" Command="{Binding CancelarBT}" IsCancel="True"/>
+                    <Button Content="Crear secciones" Background="{StaticResource Acento}" Command="{Binding CrearBT}" IsDefault="True" FontWeight="SemiBold"/>
+                </StackPanel>
+                <TextBlock Text="{Binding Error}" Foreground="{StaticResource Error}" VerticalAlignment="Center" TextWrapping="Wrap"/>
+            </DockPanel>
+        </Border>
+
+        <Grid Margin="20,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="20"/>
+                <ColumnDefinition Width="300"/>
+            </Grid.ColumnDefinitions>
+
+            <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <GroupBox Header="1  ·  Eje">
+                    <ComboBox ItemsSource="{Binding Ejes}" SelectedItem="{Binding EjeSelecc}"/>
+                </GroupBox>
+
+                <GroupBox Header="2  ·  Placements">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource Ayuda}" Margin="0,0,0,4" Text="Este eje no tiene placements: escriba estaciones en el paso 3 o créelos con el botón Placements."
+                                   Visibility="{Binding SinPlacements, Converter={StaticResource VisibleSi}}"/>
+                        <Border BorderBrush="{StaticResource Borde}" BorderThickness="1" Background="White" MaxHeight="170">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                <ItemsControl ItemsSource="{Binding Placements}" Margin="6,4">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <CheckBox IsChecked="{Binding Elegido}" Content="{Binding Texto}" Margin="0,2"/>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
+                        </Border>
+                        <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                            <Button Content="Todos" Command="{Binding TodosBT}"/>
+                            <Button Content="Ninguno" Background="{StaticResource TextoSuave}" Command="{Binding NingunoBT}"/>
+                        </StackPanel>
+                        <CheckBox IsChecked="{Binding EnPlacements}" Content="Una sección en cada placement elegido" Margin="0,8,0,0"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                            <CheckBox IsChecked="{Binding EntrePlacements}" Content="Secciones entre placements, como máximo cada " VerticalAlignment="Center"/>
+                            <TextBox Width="60" Text="{Binding Cada, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding EntrePlacements}"/>
+                            <TextBlock Text=" m" VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <CheckBox IsChecked="{Binding ConsiderarGiro}" Content="Girar la sección con el giro del placement (si no, perpendicular al eje)" Margin="0,4,0,0"/>
+                    </StackPanel>
+                </GroupBox>
+
+                <GroupBox Header="3  ·  Estaciones sueltas">
+                    <StackPanel>
+                        <TextBox Text="{Binding Estaciones, UpdateSourceTrigger=PropertyChanged}"/>
+                        <TextBlock Style="{StaticResource Ayuda}" Margin="0,2,0,0" TextWrapping="Wrap"
+                                   Text="Separadas por punto y coma, por ejemplo 0+050; 0+125.5. Se cortan perpendiculares al eje."/>
+                    </StackPanel>
+                </GroupBox>
+
+                <GroupBox Header="4  ·  Recorte y vista">
+                    <StackPanel>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="90"/>
+                                <ColumnDefinition Width="24"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="90"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                            </Grid.RowDefinitions>
+                            <TextBlock Text="Ancho total (m)  " VerticalAlignment="Center" ToolTip="Centrado en el eje."/>
+                            <TextBox Grid.Column="1" Text="{Binding Ancho, UpdateSourceTrigger=PropertyChanged}"/>
+                            <TextBlock Grid.Column="3" Text="Profundidad (m)  " VerticalAlignment="Center" ToolTip="Distancia hacia adelante que se ve en la sección."/>
+                            <TextBox Grid.Column="4" Text="{Binding Profundidad, UpdateSourceTrigger=PropertyChanged}"/>
+                            <TextBlock Grid.Row="1" Text="Sobre la rasante (m)  " VerticalAlignment="Center"/>
+                            <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Arriba, UpdateSourceTrigger=PropertyChanged}"/>
+                            <TextBlock Grid.Row="1" Grid.Column="3" Text="Bajo la rasante (m)  " VerticalAlignment="Center" ToolTip="Incluya las pilas hasta la fundación."/>
+                            <TextBox Grid.Row="1" Grid.Column="4" Text="{Binding Abajo, UpdateSourceTrigger=PropertyChanged}"/>
+                            <TextBlock Grid.Row="2" Text="Escala 1:  " VerticalAlignment="Center"/>
+                            <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding Escala, UpdateSourceTrigger=PropertyChanged}"/>
+                        </Grid>
+                        <DockPanel Margin="0,6,0,0">
+                            <TextBlock Text="Tipo de vista  " VerticalAlignment="Center"/>
+                            <ComboBox ItemsSource="{Binding TiposVista}" SelectedItem="{Binding TipoVista}" DisplayMemberPath="Name"/>
+                        </DockPanel>
+                        <TextBlock Style="{StaticResource Ayuda}" Margin="0,4,0,0" TextWrapping="Wrap"
+                                   Text="Cada vista mira en el sentido del eje (estaciones crecientes), con la derecha del eje a la derecha."/>
+                    </StackPanel>
+                </GroupBox>
+            </StackPanel>
+            </ScrollViewer>
+
+            <!--Resumen-->
+            <GroupBox Grid.Column="2" Header="Vista previa" VerticalAlignment="Top">
+                <TextBlock Text="{Binding Resumen}" TextWrapping="Wrap" LineHeight="20"/>
+            </GroupBox>
+        </Grid>
+    </DockPanel>
+</Window>

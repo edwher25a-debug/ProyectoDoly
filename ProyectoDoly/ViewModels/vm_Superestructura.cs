@@ -96,6 +96,18 @@ namespace ProyectoDoly.ViewModels
             {
                 if (!SetProperty(ref ejeSelecc, value)) return;
 
+                //Placements del eje para tramos entre placements
+                PlacementsDelEje.Clear();
+                if (value != null) foreach (Placement p in value.Eje.Placements.OrderBy(p => p.Estacion)) PlacementsDelEje.Add(p);
+                desdePlacement = PlacementsDelEje.FirstOrDefault();
+                hastaPlacement = PlacementsDelEje.LastOrDefault();
+                usarPlacements = HayPlacements;
+                OnPropertyChanged(nameof(HayPlacements));
+                OnPropertyChanged(nameof(DesdePlacement));
+                OnPropertyChanged(nameof(HastaPlacement));
+                OnPropertyChanged(nameof(UsarPlacements));
+                OnPropertyChanged(nameof(UsarEstaciones));
+
                 //Por defecto, todo el eje
                 estacionInicial = value != null ? Texto(value.Eje.EstacionInicial) : "";
                 estacionFinal = value != null ? Texto(value.Eje.EstacionFinal) : "";
@@ -142,6 +154,29 @@ namespace ProyectoDoly.ViewModels
             set
             {
                 if (SetProperty(ref espejo, value)) Actualizar();
+            }
+        }
+
+        //Tipo de componente y si se crea a ambos lados del eje (parapetos, barandas)
+        public string[] Componentes => OpcionesSuperestructura.Componentes;
+
+        private string componente = "Tablero";
+        public string Componente
+        {
+            get => componente;
+            set
+            {
+                if (SetProperty(ref componente, value ?? "Tablero")) Actualizar();
+            }
+        }
+
+        private bool ambosLados;
+        public bool AmbosLados
+        {
+            get => ambosLados;
+            set
+            {
+                if (SetProperty(ref ambosLados, value)) Actualizar();
             }
         }
 
@@ -195,6 +230,74 @@ namespace ProyectoDoly.ViewModels
                 if (SetProperty(ref desplazamientoVertical, value)) Actualizar();
             }
         }
+
+        //Tramo entre placements (From/To de SOFiSTiK) y, si se pide, un tablero por vano (Repeater)
+        private bool usarPlacements;
+        public bool UsarPlacements
+        {
+            get => usarPlacements;
+            set
+            {
+                if (!SetProperty(ref usarPlacements, value)) return;
+                OnPropertyChanged(nameof(UsarEstaciones));
+                Actualizar();
+            }
+        }
+
+        public bool UsarEstaciones
+        {
+            get => !usarPlacements;
+            set => UsarPlacements = !value;
+        }
+
+        public ObservableCollection<Placement> PlacementsDelEje { get; } = new ObservableCollection<Placement>();
+        public bool HayPlacements => PlacementsDelEje.Count >= 2;
+
+        private Placement? desdePlacement;
+        public Placement? DesdePlacement
+        {
+            get => desdePlacement;
+            set
+            {
+                if (SetProperty(ref desdePlacement, value)) Actualizar();
+            }
+        }
+
+        private Placement? hastaPlacement;
+        public Placement? HastaPlacement
+        {
+            get => hastaPlacement;
+            set
+            {
+                if (SetProperty(ref hastaPlacement, value)) Actualizar();
+            }
+        }
+
+        private bool porVano = true;
+        public bool PorVano
+        {
+            get => porVano;
+            set
+            {
+                if (SetProperty(ref porVano, value)) Actualizar();
+            }
+        }
+
+        private string junta = "0";
+        public string Junta
+        {
+            get => junta;
+            set
+            {
+                if (SetProperty(ref junta, value)) Actualizar();
+            }
+        }
+
+        //Tramos que se crearan (uno, o uno por vano)
+        private List<(string nombre, double desde, double hasta)> vanos = new List<(string, double, double)>();
+
+        //Una opcion por tablero a crear (la lista la usa el comando)
+        public List<OpcionesSuperestructura> Tableros { get; } = new List<OpcionesSuperestructura>();
 
         //4_Como se crea el tablero
         private bool familiaAdaptativa = true;
@@ -410,16 +513,49 @@ namespace ProyectoDoly.ViewModels
 
         private void Validar(EjeGuardado eje, SeccionTransversal seccion, List<Variable> variables)
         {
-            if (!LeerNumero(EstacionInicial, out double inicial) || !LeerNumero(EstacionFinal, out double final))
+            double inicial, final;
+            if (UsarPlacements)
             {
-                MostrarError("Las estaciones deben ser números en metros (por ejemplo 1234.5).");
-                return;
-            }
+                if (DesdePlacement == null || HastaPlacement == null)
+                {
+                    MostrarError("Elija los placements de inicio y fin del tablero.");
+                    return;
+                }
 
-            if (inicial < eje.Eje.EstacionInicial - 1e-6 || final > eje.Eje.EstacionFinal + 1e-6 || final - inicial < 0.01)
+                if (!LeerNumero(Junta, out double juntaValor))
+                {
+                    MostrarError("La junta entre vanos debe ser un número en metros (0 = sin junta).");
+                    return;
+                }
+
+                try
+                {
+                    vanos = PlacementsEje.Vanos(eje.Eje.Placements, DesdePlacement.Id, HastaPlacement.Id, PorVano, juntaValor);
+                }
+                catch (ArgumentException ex)
+                {
+                    MostrarError(ex.Message);
+                    return;
+                }
+
+                inicial = vanos[0].desde;
+                final = vanos[vanos.Count - 1].hasta;
+            }
+            else
             {
-                MostrarError($"El tramo debe estar entre {Eje.FormatoEstacion(eje.Eje.EstacionInicial)} y {Eje.FormatoEstacion(eje.Eje.EstacionFinal)}, con la estación final mayor.");
-                return;
+                if (!LeerNumero(EstacionInicial, out inicial) || !LeerNumero(EstacionFinal, out final))
+                {
+                    MostrarError("Las estaciones deben ser números en metros (por ejemplo 1234.5).");
+                    return;
+                }
+
+                if (inicial < eje.Eje.EstacionInicial - 1e-6 || final > eje.Eje.EstacionFinal + 1e-6 || final - inicial < 0.01)
+                {
+                    MostrarError($"El tramo debe estar entre {Eje.FormatoEstacion(eje.Eje.EstacionInicial)} y {Eje.FormatoEstacion(eje.Eje.EstacionFinal)}, con la estación final mayor.");
+                    return;
+                }
+
+                vanos = new List<(string, double, double)> { ("", inicial, final) };
             }
 
             if (!LeerNumero(Paso, out double pasoValor) || pasoValor < 0.05)
@@ -439,10 +575,13 @@ namespace ProyectoDoly.ViewModels
                        $"Secciones: {(int)Math.Ceiling(longitud / pasoValor) + 1} o más (se añaden en cada cambio de tramo" +
                        (variables.Count > 0 ? " y en cada estación de los parámetros)" : ")");
             if (variables.Count > 0) Resumen += $"\nVariables: {string.Join(", ", variables.Select(v => v.Nombre))}";
+            if (vanos.Count > 1) Resumen += $"\n{Componente}s: {vanos.Count} ({string.Join(", ", vanos.Select(v => v.nombre))})";
+            if (AmbosLados) Resumen += $"\nA ambos lados: derecha a {Texto(lateral)} m e izquierda reflejada a {Texto(-lateral)} m" + (Math.Abs(lateral) < 1e-9 ? " (¡ponga un desplazamiento lateral!)" : "");
 
             listo = new OpcionesSuperestructura
             {
                 Eje = eje,
+                Componente = Componente,
                 FamiliaAdaptativa = FamiliaAdaptativa,
                 Seccion = seccion,
                 Variables = variables,
@@ -463,18 +602,32 @@ namespace ProyectoDoly.ViewModels
             if (listo == null) return;
             listo.FamiliaAdaptativa = FamiliaAdaptativa;
 
-            //Con parametros variables se evalua la familia en cada estacion del barrido
-            if (listo.Variables.Count > 0 && lector != null)
+            //Un tablero por tramo; con parametros variables se evalua la familia en cada estacion de su barrido
+            Tableros.Clear();
+            foreach ((string nombre, double desde, double hasta) in vanos)
+            foreach (bool izquierda in AmbosLados ? new[] { false, true } : new[] { false })
             {
-                try
+                string Lado(string lado) => nombre.Length > 0 ? $"{nombre} {lado}" : lado;
+                OpcionesSuperestructura tablero = !AmbosLados
+                    ? (vanos.Count == 1 && nombre.Length == 0 ? listo : listo.ParaTramo(nombre, desde, hasta))
+                    : izquierda
+                        ? listo.ParaTramo(nombre, desde, hasta).Reflejada(Lado("izq"))
+                        : listo.ParaTramo(Lado("der"), desde, hasta);
+                if (tablero.Variables.Count > 0 && lector != null)
                 {
-                    listo.PorEstacion = SeccionesPorEstacion.Calcular(lector, listo.Estaciones(), listo.Variables, Espejo);
+                    try
+                    {
+                        tablero.PorEstacion = SeccionesPorEstacion.Calcular(lector, tablero.Estaciones(), tablero.Variables, Espejo != izquierda);
+                    }
+                    catch (Exception ex) when (ex is InvalidOperationException || ex is ArgumentException || ex is Autodesk.Revit.Exceptions.ApplicationException)
+                    {
+                        Error = (nombre.Length > 0 ? $"{nombre}: " : "") + ex.Message;
+                        Tableros.Clear();
+                        return;
+                    }
                 }
-                catch (Exception ex) when (ex is InvalidOperationException || ex is ArgumentException || ex is Autodesk.Revit.Exceptions.ApplicationException)
-                {
-                    Error = ex.Message;
-                    return;
-                }
+
+                Tableros.Add(tablero);
             }
 
             Opciones = listo;
