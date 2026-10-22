@@ -77,8 +77,13 @@ namespace ProyectoDoly.Puentes
             if (AdaptiveComponentFamilyUtils.IsAdaptiveComponentFamily(familia))
                 return AdaptiveComponentFamilyUtils.GetNumberOfPlacementPoints(familia) == 1 ? ModoSubestructura.Adaptativa : ModoSubestructura.NoAdmitida;
 
+            //Un pilar estructural va siempre de la fundacion al placement, aunque la familia diga que es de un nivel
+            bool pilar = familia.FamilyCategory?.Id.Value == (long)BuiltInCategory.OST_StructuralColumns;
             switch (familia.FamilyPlacementType)
             {
+                case FamilyPlacementType.OneLevelBased when pilar:
+                case FamilyPlacementType.WorkPlaneBased when pilar:
+                    return ModoSubestructura.EntreNiveles;
                 case FamilyPlacementType.OneLevelBased:
                 case FamilyPlacementType.WorkPlaneBased:
                     return ModoSubestructura.PorNivel;
@@ -279,10 +284,20 @@ namespace ProyectoDoly.Puentes
 
             XYZ pie = new XYZ(origen.X, origen.Y, fundacion);
             FamilyInstance ejemplar = Intentar(tipo, () => doc.Create.NewFamilyInstance(pie, tipo, nivel, estructural));
-            ejemplar.get_Parameter(BuiltInParameter.FAMILY_TOP_LEVEL_PARAM)?.Set(nivel.Id);
-            ejemplar.get_Parameter(BuiltInParameter.FAMILY_BASE_LEVEL_OFFSET_PARAM)?.Set(fundacion - nivel.Elevation);
-            ejemplar.get_Parameter(BuiltInParameter.FAMILY_TOP_LEVEL_OFFSET_PARAM)?.Set(origen.Z - nivel.Elevation);
-            doc.Regenerate();
+            Parameter? cabeza = ejemplar.get_Parameter(BuiltInParameter.FAMILY_TOP_LEVEL_PARAM);
+            if (cabeza != null && !cabeza.IsReadOnly)
+            {
+                cabeza.Set(nivel.Id);
+                ejemplar.get_Parameter(BuiltInParameter.FAMILY_BASE_LEVEL_OFFSET_PARAM)?.Set(fundacion - nivel.Elevation);
+                ejemplar.get_Parameter(BuiltInParameter.FAMILY_TOP_LEVEL_OFFSET_PARAM)?.Set(origen.Z - nivel.Elevation);
+                doc.Regenerate();
+            }
+            else
+            {
+                //Pilar de un solo nivel: el pie va a la fundacion; su altura la da el parametro de altura elegido
+                doc.Regenerate();
+                LlevarA(doc, ejemplar, pie);
+            }
             Girar(doc, ejemplar, pie, x);
             return ejemplar;
         }

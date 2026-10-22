@@ -339,7 +339,8 @@ namespace ProyectoDoly.ViewModels
             foreach (Placement p in elegidos.Take(12))
             {
                 Ubicacion3 u = UbicacionSubestructura.Calcular(eje.Eje, p, ubicacion);
-                lineas.Add($"{p.Id}:  cota {u.Origen.Z:F2} m" + (conAltura || EsPilar ? $"  ·  altura {UbicacionSubestructura.Altura(u, fundacion):F2} m" : ""));
+                lineas.Add($"{p.Id}:  cota {u.Origen.Z:F2} m" + (conAltura || EsPilar ? $"  ·  altura {UbicacionSubestructura.Altura(u, fundacion):F2} m" : "") +
+                           (EsPilar && UbicacionSubestructura.Altura(u, fundacion) > 60 ? "  (¿cota de fundación correcta?)" : ""));
                 if (EsPilar && UbicacionSubestructura.Altura(u, fundacion) < 0.01)
                 {
                     MostrarError($"En {p.Id} la cota de fundación queda por encima del placement.");
