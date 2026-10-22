@@ -20,7 +20,7 @@
                 <Image DockPanel.Dock="Left" Source="/ProyectoDoly;component/Resources/Icons/Subestructura32.png" Width="32" Height="32" Margin="0,0,12,0"/>
                 <StackPanel>
                     <TextBlock Text="Subestructura" Foreground="White" FontSize="18" FontWeight="SemiBold"/>
-                    <TextBlock Text="Coloca pilas y estribos en los placements del eje, insertados por su punto adaptativo." Foreground="{StaticResource MenuTexto}" Margin="0,2,0,0"/>
+                    <TextBlock Text="Coloca pilas, cimentaciones y estribos en los placements del eje, con el método que pide cada familia." Foreground="{StaticResource MenuTexto}" Margin="0,2,0,0"/>
                 </StackPanel>
             </DockPanel>
         </Border>
@@ -57,7 +57,7 @@
                         </DockPanel>
                         <TextBlock Text="{Binding Insercion}" FontWeight="SemiBold" Margin="0,4,0,0"/>
                         <TextBlock Style="{StaticResource Ayuda}" Margin="0,2,0,0" TextWrapping="Wrap"
-                                   Text="Como en SOFiSTiK: Modelo genérico adaptativo con un punto adaptativo, que va al punto del eje en el placement. Ejes de la familia: X en el sentido del eje, Y a la izquierda, Z hacia arriba. Si la familia no es adaptativa, se usa su origen."/>
+                                   Text="Adaptativa de un punto: el punto va al eje en el placement (X en el sentido del eje, Y a la izquierda, Z arriba). Cimentación estructural o modelo genérico: por su origen, con sus pilas, dados y pilotes anidados. Pilar estructural: de la cota de fundación al placement. Armazón estructural (estribo): por una línea en el plano del placement."/>
                     </StackPanel>
                 </GroupBox>
 
@@ -104,6 +104,10 @@
                             <TextBlock Grid.Row="1" Text="Giro adicional (°)  " VerticalAlignment="Center" ToolTip="Se suma al giro del placement (+ antihorario en planta)."/>
                             <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding GiroAdicional, UpdateSourceTrigger=PropertyChanged}"/>
                         </Grid>
+                        <DockPanel Margin="0,6,0,0" Visibility="{Binding EsLineal, Converter={StaticResource VisibleSi}}">
+                            <TextBlock Text="Longitud del estribo (m)  " VerticalAlignment="Center" ToolTip="Línea en el plano del placement (sigue su esviaje), centrada en el punto de inserción."/>
+                            <TextBox Width="90" HorizontalAlignment="Left" Text="{Binding LongitudTransversal, UpdateSourceTrigger=PropertyChanged}"/>
+                        </DockPanel>
                         <CheckBox IsChecked="{Binding SiempreVertical}" Content="Siempre vertical (sin inclinar con la pendiente de la rasante)" Margin="0,6,0,0"/>
                     </StackPanel>
                 </GroupBox>
@@ -125,7 +129,7 @@
                             <TextBox Grid.Row="1" Grid.Column="1" Width="120" HorizontalAlignment="Left" Text="{Binding CotaFundacion, UpdateSourceTrigger=PropertyChanged}"/>
                         </Grid>
                         <TextBlock Style="{StaticResource Ayuda}" Margin="0,2,0,0" TextWrapping="Wrap"
-                                   Text="Cada pila recibe en ese parámetro la altura desde la cota de fundación hasta su punto de inserción. Solo aparecen parámetros de longitud de ejemplar."/>
+                                   Text="Cada pila recibe en ese parámetro la altura desde la cota de fundación hasta su punto de inserción. Solo aparecen parámetros de longitud de ejemplar. Los pilares estructurales usan siempre la cota de fundación como base."/>
                     </StackPanel>
                 </GroupBox>
             </StackPanel>

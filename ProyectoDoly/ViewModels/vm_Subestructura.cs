@@ -93,6 +93,20 @@ namespace ProyectoDoly.ViewModels
             }
         }
 
+        private ModoSubestructura modo = ModoSubestructura.NoAdmitida;
+        public bool EsLineal => modo == ModoSubestructura.PorLinea;
+        public bool EsPilar => modo == ModoSubestructura.EntreNiveles;
+
+        private string longitudTransversal = "10";
+        public string LongitudTransversal
+        {
+            get => longitudTransversal;
+            set
+            {
+                if (SetProperty(ref longitudTransversal, value)) Actualizar();
+            }
+        }
+
         private string insercion = "";
         public string Insercion
         {
@@ -225,6 +239,9 @@ namespace ProyectoDoly.ViewModels
             ParametrosAltura.Clear();
             ParametrosAltura.Add(SinParametro);
             Insercion = "";
+            modo = TipoSelecc == null ? ModoSubestructura.NoAdmitida : CreadorSubestructura.Modo(TipoSelecc.Tipo.Family);
+            OnPropertyChanged(nameof(EsLineal));
+            OnPropertyChanged(nameof(EsPilar));
             if (TipoSelecc == null) return;
 
             Insercion = "Se inserta " + CreadorSubestructura.Insercion(TipoSelecc.Tipo.Family);
@@ -259,7 +276,7 @@ namespace ProyectoDoly.ViewModels
 
             if (EjeSelecc == null) MostrarError("Importe primero un eje con el botón Importar eje.");
             else if (Placements.Count == 0) MostrarError("El eje no tiene placements. Créelos con el botón Placements.");
-            else if (TipoSelecc == null) MostrarError("Cargue una familia de pila o estribo (Modelo genérico adaptativo con un punto adaptativo).");
+            else if (TipoSelecc == null) MostrarError("Cargue una familia de pila, cimentación o estribo.");
             else if (Insercion.Contains("no admitida")) MostrarError($"{TipoSelecc.Nombre}: {Insercion.Replace("Se inserta ", "")}.");
             else Validar(EjeSelecc);
 
@@ -288,9 +305,16 @@ namespace ProyectoDoly.ViewModels
 
             bool conAltura = ParametroAltura != SinParametro;
             double fundacion = 0;
-            if (conAltura && !LeerNumero(CotaFundacion, out fundacion))
+            if ((conAltura || EsPilar) && !LeerNumero(CotaFundacion, out fundacion))
             {
-                MostrarError("La cota de fundación debe ser un número en metros.");
+                MostrarError(EsPilar ? "Un pilar va desde la cota de fundación hasta el placement: escriba esa cota en metros." : "La cota de fundación debe ser un número en metros.");
+                return;
+            }
+
+            double longitud = 10;
+            if (EsLineal && (!LeerNumero(LongitudTransversal, out longitud) || longitud <= 0))
+            {
+                MostrarError("La longitud del estribo debe ser un número mayor que cero, en metros.");
                 return;
             }
 
@@ -315,7 +339,12 @@ namespace ProyectoDoly.ViewModels
             foreach (Placement p in elegidos.Take(12))
             {
                 Ubicacion3 u = UbicacionSubestructura.Calcular(eje.Eje, p, ubicacion);
-                lineas.Add($"{p.Id}:  cota {u.Origen.Z:F2} m" + (conAltura ? $"  ·  altura {UbicacionSubestructura.Altura(u, fundacion):F2} m" : ""));
+                lineas.Add($"{p.Id}:  cota {u.Origen.Z:F2} m" + (conAltura || EsPilar ? $"  ·  altura {UbicacionSubestructura.Altura(u, fundacion):F2} m" : ""));
+                if (EsPilar && UbicacionSubestructura.Altura(u, fundacion) < 0.01)
+                {
+                    MostrarError($"En {p.Id} la cota de fundación queda por encima del placement.");
+                    return;
+                }
             }
 
             Resumen = $"{elegidos.Count * laterales.Count} ejemplares de {TipoSelecc!.Nombre}\n" + string.Join("\n", lineas) + (elegidos.Count > 12 ? $"\n(y {elegidos.Count - 12} más)" : "");
@@ -328,7 +357,8 @@ namespace ProyectoDoly.ViewModels
                 Ubicacion = ubicacion,
                 Laterales = laterales.Count > 1 ? laterales : new List<double>(),
                 ParametroAltura = conAltura ? ParametroAltura : null,
-                CotaFundacion = fundacion
+                CotaFundacion = fundacion,
+                LongitudTransversal = longitud
             };
         }
 
