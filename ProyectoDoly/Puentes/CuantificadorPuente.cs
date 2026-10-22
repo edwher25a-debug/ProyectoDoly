@@ -38,7 +38,12 @@ namespace ProyectoDoly.Puentes
             Eje eje = opciones.Eje.Eje;
             Transform aEje = opciones.Eje.Transformacion.Inverse;
             ProyectorEje proyector = new ProyectorEje(eje);
-            List<Element> elementos = opciones.Elementos.Select(doc.GetElement).Where(e => e?.Category != null).ToList();
+            //Las familias anidadas compartidas (pilas, dados y pilotes dentro de una cimentacion) se cuantifican cada una
+            List<Element> elementos = opciones.Elementos
+                .SelectMany(id => new[] { doc.GetElement(id) }.Concat(CreadorSubestructura.Anidadas(doc, id)))
+                .Where(e => e?.Category != null)
+                .GroupBy(e => e.Id).Select(g => g.First())
+                .ToList();
             if (elementos.Count == 0) throw new InvalidOperationException("No hay elementos con categoría para cuantificar.");
 
             double Metros(double pies) => UnitUtils.ConvertFromInternalUnits(pies, UnitTypeId.Meters);

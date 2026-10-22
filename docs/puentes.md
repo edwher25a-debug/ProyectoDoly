@@ -46,12 +46,20 @@ Código en `Puentes/Ejes/EjeSecundario.cs`.
 
 ## Subestructura
 
-Botón **Subestructura** (como Substructure de SOFiSTiK): coloca una familia de pila o estribo en los placements elegidos.
-La familia debe ser Modelo genérico adaptativo con **un** punto adaptativo, que va al punto del eje en el placement
-(si no es adaptativa, se usa su origen). Ejes de la familia: X en el sentido del eje (girado por el placement y un giro
-adicional), Y a la izquierda, Z arriba; con *Siempre vertical* desactivado se inclina con la rasante. Desplazamientos a la
-derecha y hacia arriba en el plano del placement. Opcional: un parámetro de longitud de ejemplar recibe la altura desde
-una cota de fundación hasta el punto de inserción. Cálculo en `Puentes/Subestructura/UbicacionSubestructura.cs`.
+Botón **Subestructura** (como Substructure de SOFiSTiK): coloca una familia de pila, cimentación o estribo en los placements elegidos.
+Acepta cualquier familia cargable de modelo y la coloca con el método que pide su tipo de colocación:
+
+| Familia | Cómo se coloca |
+|---|---|
+| Adaptativa con **un** punto | El punto va al eje en el placement. Ejes: X en el sentido del eje, Y a la izquierda, Z arriba. |
+| Basada en nivel o plano de trabajo (Cimentación estructural, Modelo genérico...) | Por su origen, en el nivel más cercano por debajo y llevada a la cota del placement; girada con el eje. Las familias anidadas compartidas (pilas de Pilares estructurales, dados y pilotes de Cimentación estructural) vienen dentro. |
+| Pilar estructural (dos niveles) | Desde la cota de fundación hasta el placement, como elemento estructural. |
+| Armazón estructural u otra basada en línea (estribos) | Por una línea en el plano del placement (sigue el esviaje), centrada en el punto de inserción, con la longitud indicada. |
+
+Desplazamientos a la derecha y hacia arriba en el plano del placement; con *Siempre vertical* desactivado una adaptativa se
+inclina con la rasante. Opcional: un parámetro de longitud de ejemplar recibe la altura desde una cota de fundación hasta el
+punto de inserción. **Cuantificar** escribe también los parámetros en cada familia anidada compartida, para que pilas, dados
+y pilotes salgan en las tablas. Cálculo en `Puentes/Subestructura/UbicacionSubestructura.cs`.
 
 ### Vigas y diafragmas
 
