@@ -55,7 +55,7 @@
                             <Button DockPanel.Dock="Right" Content="Cargar familia…" Command="{Binding CargarFamiliaBT}"/>
                             <ComboBox ItemsSource="{Binding Tipos}" SelectedItem="{Binding TipoSelecc}"/>
                         </DockPanel>
-                        <TextBlock Text="{Binding Insercion}" FontWeight="SemiBold" Margin="0,4,0,0"/>
+                        <TextBlock Text="{Binding Insercion}" FontWeight="SemiBold" Margin="0,4,0,0" TextWrapping="Wrap"/>
                         <TextBlock Style="{StaticResource Ayuda}" Margin="0,2,0,0" TextWrapping="Wrap"
                                    Text="Adaptativa de un punto: el punto va al eje en el placement (X en el sentido del eje, Y a la izquierda, Z arriba). Cimentación estructural o modelo genérico: por su origen, con sus pilas, dados y pilotes anidados. Pilar estructural: de la cota de fundación al placement. Armazón estructural (estribo): por una línea en el plano del placement."/>
                     </StackPanel>
