@@ -81,9 +81,9 @@ namespace ProyectoDoly
             var ejePorTabla = new PushButtonData(nameof(EjePorTablaCmd), "Eje por\ntabla",
                 Assembly.GetExecutingAssembly().Location, typeof(EjePorTablaCmd).FullName)
             {
-                ToolTip = "Crea el eje escribiendo sus puntos de inflexión con radios y clotoides, cuando no hay LandXML.",
-                LongDescription = "Un PI por línea (X; Y; radio; clotoide), en coordenadas compartidas; se puede pegar desde Excel. " +
-                                  "La rasante se da con cota inicial y pendiente o con una tabla de PIV.",
+                ToolTip = "Crea el eje elemento por elemento (rectas, clotoides y arcos), con vista previa. Con un eje seleccionado, lo edita.",
+                LongDescription = "Como el cuadro Axis Data de SOFiSTiK: origen, dirección y estación inicial, y pestañas Horizontal, " +
+                                  "Vertical (PIV) y Placements. También convierte una tabla de PI con radios y clotoides en elementos.",
                 LargeImage = new BitmapImage(new Uri("pack://application:,,,/ProyectoDoly;component/Resources/Icons/EjePorTabla32.png")),
                 Image = new BitmapImage(new Uri("pack://application:,,,/ProyectoDoly;component/Resources/Icons/EjePorTabla16.png"))
             };

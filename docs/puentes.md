@@ -30,11 +30,18 @@ o en un DWG vinculado o importado (las polilíneas se toman por tramos rectos).
 
 ## Eje por tabla
 
-Botón **Eje por tabla** (como el editor de ejes de SOFiSTiK): se escribe un PI por línea, `X; Y; radio; clotoide`, en metros
-y coordenadas compartidas, o se pegan las columnas desde Excel. El primero y el último PI son el inicio y el fin. En cada
-PI intermedio va una curva circular de ese radio con clotoides simétricas de ese largo (recta, clotoide, arco, clotoide,
-recta); sin radio el PI es un vértice. Si una curva no cabe entre sus vecinas, o las clotoides giran más que el vértice,
-se dice en qué PI. La rasante y el dibujo son los mismos que en *Eje desde líneas*. Cálculo en `Puentes/Ejes/EjePorTabla.cs`.
+Botón **Eje por tabla** (como el cuadro *Axis Data* de SOFiSTiK): crea el eje elemento por elemento. Con un eje
+seleccionado en el modelo, lo abre para editarlo y guarda los cambios en el mismo eje.
+
+- **Datos del eje**: origen X, Y; dirección al inicio X, Y (1, 0 = Este); coordenadas de proyecto (punto base), compartidas o internas; estación inicial e ID.
+- **Horizontal**: tabla de elementos con tipo (recta, clotoide, arco), longitud, radio inicial y final, y la estación final calculada. Radio + = curva a la derecha, − = a la izquierda; en una clotoide 0 o vacío = recta. Botones ↑ ↓ para reordenar; *Agregar* propone el elemento que sigue (clotoide de salida tras un arco, arco tras una clotoide de entrada).
+- **Vertical**: PIV con estación, cota y longitud de curva parabólica. Sin PIV el eje queda a cota 0.
+- **Placements**: ID, estación y giro.
+- **Desde PI**: pega una tabla `X; Y; radio; clotoide` y la convierte en elementos (curvas circulares con clotoides simétricas).
+- **Vista previa** en planta (un color por tipo de elemento, con los placements) y en perfil, que se actualiza al escribir.
+
+Al editar un eje, lo que ya se colocó sobre él (tablero, pilas, secciones) no se mueve: hay que volver a crearlo.
+Cálculo en `Puentes/Ejes/EjePorElementos.cs` y `Puentes/Ejes/EjePorTabla.cs`.
 
 ## Placements
 

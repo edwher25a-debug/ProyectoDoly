@@ -75,7 +75,44 @@ namespace ProyectoDoly.Puentes
         ///     Crea un eje dibujado en el modelo (rectas y arcos de Revit o de un DWG), ya en coordenadas compartidas
         /// </summary>
         public static ResultadoEje CrearDibujado(Document doc, Eje eje, string descripcion, string origen) =>
-            Crear(doc, eje, InternaACompartida(doc).Inverse, Ubicacion.Compartidas, descripcion, $"Eje {eje.Nombre}", origen);
+            CrearDibujado(doc, eje, InternaACompartida(doc).Inverse, descripcion, origen);
+
+        //Igual, con la transformacion de las coordenadas del eje a las internas que se elija (proyecto, compartidas o internas)
+        public static ResultadoEje CrearDibujado(Document doc, Eje eje, Transform transformacion, string descripcion, string origen) =>
+            Crear(doc, eje, transformacion, Ubicacion.Compartidas, descripcion, $"Eje {eje.Nombre}", origen);
+
+        /// <summary>
+        ///     Cambia un eje ya creado por otro (editado en la tabla), en el mismo elemento y con su misma transformacion
+        /// </summary>
+        public static ResultadoEje Reemplazar(Document doc, EjeGuardado guardado, Eje nuevo, string descripcion)
+        {
+            using (Transaction transaccion = new Transaction(doc, $"Editar eje {nuevo.Nombre}"))
+            {
+                transaccion.Start();
+                EjeGuardado editado = new EjeGuardado { Id = guardado.Id, Eje = nuevo, Transformacion = guardado.Transformacion };
+                Actualizar(doc, editado);
+                if (doc.GetElement(guardado.Id) is DirectShape forma)
+                {
+                    forma.SetName($"Eje {nuevo.Nombre}");
+                    forma.ApplicationDataId = nuevo.Nombre;
+                    forma.get_Parameter(BuiltInParameter.ALL_MODEL_INSTANCE_COMMENTS)?.Set(descripcion);
+                }
+
+                transaccion.Commit();
+            }
+
+            return new ResultadoEje
+            {
+                Id = guardado.Id,
+                Resumen = $"Eje \"{nuevo.Nombre}\" actualizado.\n\n" +
+                          $"Estaciones: {Eje.FormatoEstacion(nuevo.EstacionInicial)} a {Eje.FormatoEstacion(nuevo.EstacionFinal)}\n" +
+                          $"Longitud: {nuevo.Horizontal.Longitud:F3} m, {nuevo.Horizontal.Elementos.Count} elementos, {nuevo.Placements.Count} placements\n\n" +
+                          "Lo que ya se colocó sobre el eje (tablero, pilas, secciones) no se mueve solo: vuelva a crearlo si cambió la geometría."
+            };
+        }
+
+        //Coordenadas de proyecto (respecto al punto base) a internas
+        public static Transform ProyectoAInterna(Document doc) => Transform.CreateTranslation(BasePoint.GetProjectBasePoint(doc).Position);
 
         //Lleva puntos del modelo (pies, origen interno) a coordenadas compartidas (pies), como "Colocar por coordenadas"
         public static Transform InternaACompartida(Document doc)

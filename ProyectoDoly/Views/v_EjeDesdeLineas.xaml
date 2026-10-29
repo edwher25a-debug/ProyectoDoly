@@ -1,7 +1,7 @@
 <Window x:Class="ProyectoDoly.Views.v_EjeDesdeLineas"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="{Binding Titulo}" Width="840" Height="640" MinWidth="660" MinHeight="480"
+        Title="Eje desde líneas" Width="840" Height="640" MinWidth="660" MinHeight="480"
         WindowStartupLocation="CenterScreen" ResizeMode="CanResizeWithGrip"
         Background="{DynamicResource Fondo}" Foreground="{DynamicResource Texto}">
     <Window.Resources>
@@ -9,7 +9,6 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/ProyectoDoly;component/Views/Estilos.xaml"/>
             </ResourceDictionary.MergedDictionaries>
-            <BooleanToVisibilityConverter x:Key="VisibleSi"/>
         </ResourceDictionary>
     </Window.Resources>
 
@@ -17,11 +16,10 @@
         <!--Encabezado-->
         <Border DockPanel.Dock="Top" Background="{StaticResource Primario}" Padding="20,14">
             <DockPanel>
-                <Image DockPanel.Dock="Left" Source="/ProyectoDoly;component/Resources/Icons/EjeDesdeLineas32.png" Visibility="{Binding PorLineas, Converter={StaticResource VisibleSi}}" Width="32" Height="32" Margin="0,0,12,0"/>
-                <Image DockPanel.Dock="Left" Source="/ProyectoDoly;component/Resources/Icons/EjePorTabla32.png" Visibility="{Binding PorTabla, Converter={StaticResource VisibleSi}}" Width="32" Height="32" Margin="0,0,12,0"/>
+                <Image DockPanel.Dock="Left" Source="/ProyectoDoly;component/Resources/Icons/EjeDesdeLineas32.png" Width="32" Height="32" Margin="0,0,12,0"/>
                 <StackPanel>
-                    <TextBlock Text="{Binding Titulo}" Foreground="White" FontSize="18" FontWeight="SemiBold"/>
-                    <TextBlock Text="{Binding Subtitulo}" Foreground="{StaticResource MenuTexto}" Margin="0,2,0,0"/>
+                    <TextBlock Text="Eje desde líneas" Foreground="White" FontSize="18" FontWeight="SemiBold"/>
+                    <TextBlock Text="Crea el eje con las rectas y arcos elegidos, sin LandXML, y le pone rasante." Foreground="{StaticResource MenuTexto}" Margin="0,2,0,0"/>
                 </StackPanel>
             </DockPanel>
         </Border>
@@ -62,20 +60,11 @@
                         <TextBox Grid.Column="1" Text="{Binding Nombre, UpdateSourceTrigger=PropertyChanged}"/>
                         <TextBlock Grid.Row="1" Text="Estación inicial  " VerticalAlignment="Center"/>
                         <TextBox Grid.Row="1" Grid.Column="1" Width="120" HorizontalAlignment="Left" Text="{Binding EstacionInicial, UpdateSourceTrigger=PropertyChanged}"/>
-                        <TextBlock Grid.Row="2" Text="Unir extremos a menos de (mm)  " VerticalAlignment="Center" Visibility="{Binding PorLineas, Converter={StaticResource VisibleSi}}"/>
-                        <TextBox Grid.Row="2" Grid.Column="1" Width="120" HorizontalAlignment="Left" Text="{Binding Tolerancia, UpdateSourceTrigger=PropertyChanged}" Visibility="{Binding PorLineas, Converter={StaticResource VisibleSi}}"/>
-                        <CheckBox Grid.Row="3" Grid.ColumnSpan="2" IsChecked="{Binding AlReves}" Margin="0,6,0,0" Visibility="{Binding PorLineas, Converter={StaticResource VisibleSi}}"
+                        <TextBlock Grid.Row="2" Text="Unir extremos a menos de (mm)  " VerticalAlignment="Center"/>
+                        <TextBox Grid.Row="2" Grid.Column="1" Width="120" HorizontalAlignment="Left" Text="{Binding Tolerancia, UpdateSourceTrigger=PropertyChanged}"/>
+                        <CheckBox Grid.Row="3" Grid.ColumnSpan="2" IsChecked="{Binding AlReves}" Margin="0,6,0,0"
                                   Content="Empezar por el otro extremo (el eje empieza donde empieza la primera línea elegida)"/>
                     </Grid>
-                </GroupBox>
-
-                <GroupBox Header="Puntos de inflexión (PI)" Visibility="{Binding PorTabla, Converter={StaticResource VisibleSi}}">
-                    <StackPanel>
-                        <TextBox Text="{Binding TablaPi, UpdateSourceTrigger=PropertyChanged}" Height="140" FontFamily="Consolas"
-                                 AcceptsReturn="True" AcceptsTab="True" TextWrapping="NoWrap" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"/>
-                        <TextBlock Style="{StaticResource Ayuda}" Margin="0,2,0,0" TextWrapping="Wrap"
-                                   Text="Un PI por línea: X (Este); Y (Norte); radio; clotoide, en metros y coordenadas compartidas. El primero y el último son el inicio y el fin; en los intermedios va una curva de ese radio con clotoides de ese largo a la entrada y a la salida (0 o vacío = sin clotoide; sin radio = vértice). Se puede pegar desde Excel."/>
-                    </StackPanel>
                 </GroupBox>
 
                 <GroupBox Header="2  ·  Rasante">
