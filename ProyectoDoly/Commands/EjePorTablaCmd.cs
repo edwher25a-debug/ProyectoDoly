@@ -43,7 +43,19 @@ namespace ProyectoDoly.Commands
                 paso = "dibujar el eje";
                 ResultadoEje resultado;
                 if (editar != null)
-                    resultado = CreadorEje.Reemplazar(doc, editar, viewModel.Resultado, viewModel.Descripcion);
+                {
+                    //Eje y todo lo atado a el en un solo paso de deshacer
+                    using (TransactionGroup grupo = new TransactionGroup(doc, $"Editar eje {viewModel.Resultado.Nombre}"))
+                    {
+                        grupo.Start();
+                        resultado = CreadorEje.Reemplazar(doc, editar, viewModel.Resultado, viewModel.Descripcion);
+                        paso = "actualizar lo que depende del eje";
+                        ResultadoActualizacion dependientes = ActualizadorEje.Actualizar(doc, new EjeGuardado { Id = editar.Id, Eje = viewModel.Resultado, Transformacion = editar.Transformacion });
+                        grupo.Assimilate();
+                        resultado.Resumen = resultado.Resumen.Substring(0, resultado.Resumen.IndexOf("\n\nLo que ya", StringComparison.Ordinal) is int corte && corte > 0 ? corte : resultado.Resumen.Length) +
+                                            "\n\n" + dependientes.Texto;
+                    }
+                }
                 else
                 {
                     Transform transformacion = viewModel.Sistema switch

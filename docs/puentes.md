@@ -43,6 +43,20 @@ seleccionado en el modelo, lo abre para editarlo y guarda los cambios en el mism
 Al editar un eje, lo que ya se colocó sobre él (tablero, pilas, secciones) no se mueve: hay que volver a crearlo.
 Cálculo en `Puentes/Ejes/EjePorElementos.cs` y `Puentes/Ejes/EjePorTabla.cs`.
 
+## Actualizar lo que depende del eje
+
+Cada tablero, pila y eje secundario guarda el eje del que depende y cómo se creó (Extensible Storage). Al editar el eje
+con **Eje por tabla** o cambiar sus **Placements**, se actualiza todo lo que cuelga de él, en un solo paso de deshacer:
+
+- **Ejes secundarios**: se recalculan con su mismo desplazamiento y, a su vez, actualizan lo suyo.
+- **Pilas, estribos y cimentaciones**: se mueven a su placement (mismo desplazamiento, giro y altura), sin borrarse: conservan su tipo, marca y parámetros.
+- **Tableros y componentes barridos**: se vuelven a crear con la misma sección, desplazamientos y parámetros variables; sus extremos siguen al placement o al extremo del eje en que estaban. Primero se crea el nuevo y, si sale bien, se borra el anterior.
+- Si el eje estaba **cuantificado**, se vuelve a cuantificar.
+
+El botón **Actualizar desde eje** hace lo mismo a pedido, con el eje seleccionado. Las secciones y las rejillas no se
+mueven, y los elementos creados antes de esta versión no están atados al eje. Código en `Puentes/ActualizadorEje.cs` y
+`Puentes/Dependencias/Recetas.cs`.
+
 ## Placements
 
 Botón **Placements**: puntos con nombre a lo largo del eje (como "Add Placements" de SOFiSTiK), con ID, estación y giro

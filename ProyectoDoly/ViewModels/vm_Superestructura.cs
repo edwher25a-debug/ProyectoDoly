@@ -618,6 +618,8 @@ namespace ProyectoDoly.ViewModels
                     try
                     {
                         tablero.PorEstacion = SeccionesPorEstacion.Calcular(lector, tablero.Estaciones(), tablero.Variables, Espejo != izquierda);
+                        tablero.TipoSeccion = TipoSelecc!.Tipo.UniqueId;
+                        tablero.EspejoVariables = Espejo != izquierda;
                     }
                     catch (Exception ex) when (ex is InvalidOperationException || ex is ArgumentException || ex is Autodesk.Revit.Exceptions.ApplicationException)
                     {

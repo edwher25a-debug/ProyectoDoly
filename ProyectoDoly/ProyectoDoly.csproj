@@ -72,6 +72,8 @@
         <Resource Include="Resources\Icons\Cuantificar32.png" />
         <Resource Include="Resources\Icons\EjeDesdeLineas16.png" />
         <Resource Include="Resources\Icons\EjeDesdeLineas32.png" />
+        <Resource Include="Resources\Icons\ActualizarEje16.png" />
+        <Resource Include="Resources\Icons\ActualizarEje32.png" />
         <Resource Include="Resources\Icons\EjePorTabla16.png" />
         <Resource Include="Resources\Icons\EjePorTabla32.png" />
         <Resource Include="Resources\Icons\EjeSecundario16.png" />

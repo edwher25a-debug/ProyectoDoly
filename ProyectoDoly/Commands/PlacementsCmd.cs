@@ -45,20 +45,31 @@ namespace ProyectoDoly.Commands
 
                 paso = "guardar los placements en el eje";
                 EjeGuardado eje = viewModel.EjeSelecc;
-                using (Transaction transaccion = new Transaction(doc, $"Placements {eje.Eje.Nombre}"))
+                ResultadoActualizacion dependientes;
+                using (TransactionGroup grupo = new TransactionGroup(doc, $"Placements {eje.Eje.Nombre}"))
                 {
-                    transaccion.Start();
-                    eje.Eje.Placements.Clear();
-                    eje.Eje.Placements.AddRange(viewModel.Resultado);
-                    CreadorEje.Actualizar(doc, eje);
-                    transaccion.Commit();
+                    grupo.Start();
+                    using (Transaction transaccion = new Transaction(doc, $"Placements {eje.Eje.Nombre}"))
+                    {
+                        transaccion.Start();
+                        eje.Eje.Placements.Clear();
+                        eje.Eje.Placements.AddRange(viewModel.Resultado);
+                        CreadorEje.Actualizar(doc, eje);
+                        transaccion.Commit();
+                    }
+
+                    //Pilas, tableros por vano y ejes secundarios siguen a sus placements
+                    paso = "actualizar lo que depende del eje";
+                    dependientes = ActualizadorEje.Actualizar(doc, eje);
+                    grupo.Assimilate();
                 }
 
                 uidoc.Selection.SetElementIds(new List<ElementId> { eje.Id });
                 TaskDialog.Show("Placements",
                     $"Eje \"{eje.Eje.Nombre}\": {eje.Eje.Placements.Count} placements guardados.\n\n" +
                     string.Join("\n", eje.Eje.Placements.Take(12).Select(p => $"{p.Id}   {Eje.FormatoEstacion(p.Estacion)}" + (Math.Abs(p.Rotacion) > 1e-9 ? $"   giro {p.Rotacion:0.##}°" : ""))) +
-                    (eje.Eje.Placements.Count > 12 ? $"\n(y {eje.Eje.Placements.Count - 12} más)" : ""));
+                    (eje.Eje.Placements.Count > 12 ? $"\n(y {eje.Eje.Placements.Count - 12} más)" : "") +
+                    (dependientes.Nada ? "" : "\n\n" + dependientes.Texto));
                 return Result.Succeeded;
             }
             catch (InvalidOperationException ex)
