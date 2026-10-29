@@ -70,6 +70,8 @@
         <Resource Include="Resources\Icons\Planta32.png" />
         <Resource Include="Resources\Icons\Cuantificar16.png" />
         <Resource Include="Resources\Icons\Cuantificar32.png" />
+        <Resource Include="Resources\Icons\EjeDesdeLineas16.png" />
+        <Resource Include="Resources\Icons\EjeDesdeLineas32.png" />
         <Resource Include="Resources\Icons\EjeSecundario16.png" />
         <Resource Include="Resources\Icons\EjeSecundario32.png" />
         <Resource Include="Resources\Icons\ExportarEje16.png" />

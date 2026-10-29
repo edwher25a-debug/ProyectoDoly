@@ -71,6 +71,20 @@ namespace ProyectoDoly.Puentes
         public static ResultadoEje CrearDerivado(Document doc, Eje eje, EjeGuardado principal, string descripcion) =>
             Crear(doc, eje, principal.Transformacion, null, descripcion, $"Eje secundario {eje.Nombre}", $"Eje principal: {principal.Eje.Nombre}");
 
+        /// <summary>
+        ///     Crea un eje dibujado en el modelo (rectas y arcos de Revit o de un DWG), ya en coordenadas compartidas
+        /// </summary>
+        public static ResultadoEje CrearDibujado(Document doc, Eje eje, string descripcion, string origen) =>
+            Crear(doc, eje, InternaACompartida(doc).Inverse, null, descripcion, $"Eje desde líneas {eje.Nombre}", origen);
+
+        //Lleva puntos del modelo (pies, origen interno) a coordenadas compartidas (pies), como "Colocar por coordenadas"
+        public static Transform InternaACompartida(Document doc)
+        {
+            ProjectPosition origen = doc.ActiveProjectLocation.GetProjectPosition(XYZ.Zero);
+            return Transform.CreateTranslation(new XYZ(origen.EastWest, origen.NorthSouth, origen.Elevation))
+                .Multiply(Transform.CreateRotation(XYZ.BasisZ, origen.Angle));
+        }
+
         private static ResultadoEje Crear(Document doc, Eje eje, Transform transformacion, Ubicacion? ubicacion, string descripcion, string nombreTransaccion, string ultimaLinea)
         {
             GeometriaEje geometria = Dibujar(doc, eje, transformacion, ubicacion);
@@ -205,10 +219,7 @@ namespace ProyectoDoly.Puentes
             }
 
             //Misma transformacion que "Colocar por coordenadas" de ProyectoDoly
-            ProjectPosition origen = doc.ActiveProjectLocation.GetProjectPosition(XYZ.Zero);
-            Transform internaACompartida = Transform.CreateTranslation(new XYZ(origen.EastWest, origen.NorthSouth, origen.Elevation))
-                .Multiply(Transform.CreateRotation(XYZ.BasisZ, origen.Angle));
-            return internaACompartida.Inverse;
+            return InternaACompartida(doc).Inverse;
         }
 
         private static void ValidarDistancia(List<XYZ> puntos, Ubicacion ubicacion)

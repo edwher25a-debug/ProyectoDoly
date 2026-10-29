@@ -17,6 +17,17 @@ El análisis de restricciones está en [sofistik-bridge-modeler-restricciones.md
 
 Archivo de prueba: `Puentes.Tests/Datos/eje_prueba.xml`.
 
+## Eje desde líneas
+
+Botón **Eje desde líneas**: crea el eje sin LandXML, con rectas y arcos dibujados en Revit (líneas de modelo o de detalle)
+o en un DWG vinculado o importado (las polilíneas se toman por tramos rectos).
+
+- Se eligen en cualquier orden y sentido y se encadenan por sus extremos (tolerancia ajustable, 10 mm por defecto). Si hay un hueco o un ramal, se dice dónde.
+- El eje empieza en el extremo más cercano al inicio de la primera línea elegida; la casilla *Empezar por el otro extremo* lo da vuelta.
+- Rasante: cota inicial y pendiente constante, o una tabla de PIV `estación = cota / longitud de curva` (0+000 = 545.30; 0+120 = 548 / 80; 0+300 = 546.5).
+- La vista previa avisa de los quiebres (uniones no tangentes) con su estación y ángulo.
+- Splines y elipses no se admiten: hay que convertirlas en arcos. Cálculo en `Puentes/Ejes/EjeDesdeTramos.cs`.
+
 ## Placements
 
 Botón **Placements**: puntos con nombre a lo largo del eje (como "Add Placements" de SOFiSTiK), con ID, estación y giro

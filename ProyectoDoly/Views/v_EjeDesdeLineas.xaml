@@ -1,0 +1,104 @@
+<Window x:Class="ProyectoDoly.Views.v_EjeDesdeLineas"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Eje desde líneas" Width="840" Height="640" MinWidth="660" MinHeight="480"
+        WindowStartupLocation="CenterScreen" ResizeMode="CanResizeWithGrip"
+        Background="{DynamicResource Fondo}" Foreground="{DynamicResource Texto}">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/ProyectoDoly;component/Views/Estilos.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <DockPanel>
+        <!--Encabezado-->
+        <Border DockPanel.Dock="Top" Background="{StaticResource Primario}" Padding="20,14">
+            <DockPanel>
+                <Image DockPanel.Dock="Left" Source="/ProyectoDoly;component/Resources/Icons/EjeDesdeLineas32.png" Width="32" Height="32" Margin="0,0,12,0"/>
+                <StackPanel>
+                    <TextBlock Text="Eje desde líneas" Foreground="White" FontSize="18" FontWeight="SemiBold"/>
+                    <TextBlock Text="Crea el eje con las rectas y arcos elegidos, sin LandXML, y le pone rasante." Foreground="{StaticResource MenuTexto}" Margin="0,2,0,0"/>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <!--Botones-->
+        <Border DockPanel.Dock="Bottom" Background="White" BorderBrush="{StaticResource Borde}" BorderThickness="0,1,0,0" Padding="20,10">
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                    <Button Content="Cancelar" Background="{StaticResource TextoSuave}" Command="{Binding CancelarBT}" IsCancel="True"/>
+                    <Button Content="Crear eje" Background="{StaticResource Acento}" Command="{Binding CrearBT}" IsDefault="True" FontWeight="SemiBold"/>
+                </StackPanel>
+                <TextBlock Text="{Binding Error}" Foreground="{StaticResource Error}" VerticalAlignment="Center" TextWrapping="Wrap"/>
+            </DockPanel>
+        </Border>
+
+        <Grid Margin="20,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="20"/>
+                <ColumnDefinition Width="280"/>
+            </Grid.ColumnDefinitions>
+
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <GroupBox Header="1  ·  Eje">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition/>
+                            <RowDefinition/>
+                            <RowDefinition/>
+                            <RowDefinition/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Text="Nombre  " VerticalAlignment="Center"/>
+                        <TextBox Grid.Column="1" Text="{Binding Nombre, UpdateSourceTrigger=PropertyChanged}"/>
+                        <TextBlock Grid.Row="1" Text="Estación inicial  " VerticalAlignment="Center"/>
+                        <TextBox Grid.Row="1" Grid.Column="1" Width="120" HorizontalAlignment="Left" Text="{Binding EstacionInicial, UpdateSourceTrigger=PropertyChanged}"/>
+                        <TextBlock Grid.Row="2" Text="Unir extremos a menos de (mm)  " VerticalAlignment="Center"/>
+                        <TextBox Grid.Row="2" Grid.Column="1" Width="120" HorizontalAlignment="Left" Text="{Binding Tolerancia, UpdateSourceTrigger=PropertyChanged}"/>
+                        <CheckBox Grid.Row="3" Grid.ColumnSpan="2" IsChecked="{Binding AlReves}" Margin="0,6,0,0"
+                                  Content="Empezar por el otro extremo (el eje empieza donde empieza la primera línea elegida)"/>
+                    </Grid>
+                </GroupBox>
+
+                <GroupBox Header="2  ·  Rasante">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <RadioButton IsChecked="{Binding ConPendiente}" Content="Cota inicial (m)  " VerticalAlignment="Center"/>
+                            <TextBox Width="90" Text="{Binding CotaInicial, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding ConPendiente}"/>
+                            <TextBlock Text="   pendiente (%)  " VerticalAlignment="Center"/>
+                            <TextBox Width="70" Text="{Binding Pendiente, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding ConPendiente}" ToolTip="Positiva = sube en el sentido del eje."/>
+                        </StackPanel>
+                        <RadioButton IsChecked="{Binding ConTabla}" Content="Tabla de PIV" Margin="0,8,0,2"/>
+                        <TextBox Text="{Binding TablaPiv, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding ConTabla}" Height="90"
+                                 AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"/>
+                        <TextBlock Style="{StaticResource Ayuda}" Margin="0,2,0,0" TextWrapping="Wrap"
+                                   Text="Una línea o punto y coma por PIV: estación = cota, y / longitud de la curva vertical si la tiene. Ejemplo: 0+000 = 545.30; 0+120 = 548 / 80; 0+300 = 546.5. Debe cubrir todo el eje."/>
+                    </StackPanel>
+                </GroupBox>
+
+                <GroupBox Header="3  ·  Dibujo">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Marcas de estación cada (m)  " VerticalAlignment="Center"/>
+                            <TextBox Width="80" Text="{Binding MarcasCada, UpdateSourceTrigger=PropertyChanged}"/>
+                        </StackPanel>
+                        <TextBlock Style="{StaticResource Ayuda}" Margin="0,6,0,0" TextWrapping="Wrap"
+                                   Text="El eje se guarda en coordenadas compartidas, igual que uno importado: sirve para Placements, Superestructura, Subestructura y las demás herramientas. Las líneas elegidas se conservan."/>
+                    </StackPanel>
+                </GroupBox>
+            </StackPanel>
+            </ScrollViewer>
+
+            <GroupBox Grid.Column="2" Header="Vista previa" VerticalAlignment="Top">
+                <TextBlock Text="{Binding Resumen}" TextWrapping="Wrap" LineHeight="20"/>
+            </GroupBox>
+        </Grid>
+    </DockPanel>
+</Window>
