@@ -66,6 +66,30 @@ namespace ProyectoDoly
 
             panelPuentes.AddItem(importarEje);
 
+            var ejeDesdeLineas = new PushButtonData(nameof(EjeDesdeLineasCmd), "Eje desde\nlíneas",
+                Assembly.GetExecutingAssembly().Location, typeof(EjeDesdeLineasCmd).FullName)
+            {
+                ToolTip = "Crea el eje con rectas y arcos dibujados en Revit o en un DWG, cuando no hay LandXML.",
+                LongDescription = "Las líneas se encadenan en cualquier orden y sentido. La rasante se da con cota inicial y pendiente " +
+                                  "o con una tabla de PIV. El eje queda igual que uno importado y sirve para todas las herramientas de Puentes.",
+                LargeImage = new BitmapImage(new Uri("pack://application:,,,/ProyectoDoly;component/Resources/Icons/EjeDesdeLineas32.png")),
+                Image = new BitmapImage(new Uri("pack://application:,,,/ProyectoDoly;component/Resources/Icons/EjeDesdeLineas16.png"))
+            };
+
+            panelPuentes.AddItem(ejeDesdeLineas);
+
+            var ejePorTabla = new PushButtonData(nameof(EjePorTablaCmd), "Eje por\ntabla",
+                Assembly.GetExecutingAssembly().Location, typeof(EjePorTablaCmd).FullName)
+            {
+                ToolTip = "Crea el eje escribiendo sus puntos de inflexión con radios y clotoides, cuando no hay LandXML.",
+                LongDescription = "Un PI por línea (X; Y; radio; clotoide), en coordenadas compartidas; se puede pegar desde Excel. " +
+                                  "La rasante se da con cota inicial y pendiente o con una tabla de PIV.",
+                LargeImage = new BitmapImage(new Uri("pack://application:,,,/ProyectoDoly;component/Resources/Icons/EjePorTabla32.png")),
+                Image = new BitmapImage(new Uri("pack://application:,,,/ProyectoDoly;component/Resources/Icons/EjePorTabla16.png"))
+            };
+
+            panelPuentes.AddItem(ejePorTabla);
+
             var placements = new PushButtonData(nameof(PlacementsCmd), "Place-\nments",
                 Assembly.GetExecutingAssembly().Location, typeof(PlacementsCmd).FullName)
             {
