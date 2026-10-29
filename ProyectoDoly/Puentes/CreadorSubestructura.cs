@@ -1,5 +1,6 @@
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Structure;
+using ProyectoDoly.Puentes.Dependencias;
 using ProyectoDoly.Puentes.Ejes;
 using ProyectoDoly.Puentes.Subestructura;
 
@@ -142,6 +143,7 @@ namespace ProyectoDoly.Puentes
             {
                 transaccion.Start();
                 if (!opciones.Tipo.IsActive) opciones.Tipo.Activate();
+                Element? ejeElemento = doc.GetElement(opciones.Eje.Id);
 
                 List<double> laterales = opciones.Laterales.Count > 0 ? opciones.Laterales : new List<double> { opciones.Ubicacion.DesplazamientoLateral };
                 foreach (Placement placement in opciones.Placements)
@@ -192,6 +194,7 @@ namespace ProyectoDoly.Puentes
 
                     ejemplar.get_Parameter(BuiltInParameter.ALL_MODEL_INSTANCE_COMMENTS)?
                         .Set($"Subestructura | Eje {eje.Nombre} | {placement.Id} | {Eje.FormatoEstacion(placement.Estacion)}" + (laterales.Count > 1 ? $" | derecha {lateral:0.###} m" : ""));
+                    if (ejeElemento != null) DatosDependencia.Guardar(ejemplar, ejeElemento, Receta(opciones, placement, lateral));
                     resultado.Ids.Add(ejemplar.Id);
                     lineas.Add($"{placement.Id}{(laterales.Count > 1 ? $" ({lateral:0.##} m)" : "")}   {Eje.FormatoEstacion(placement.Estacion)}   cota {u.Origen.Z:F2}{altura}");
                 }
@@ -208,6 +211,122 @@ namespace ProyectoDoly.Puentes
                                 string.Join("\n", lineas.Take(16)) + (lineas.Count > 16 ? $"\n(y {lineas.Count - 16} más)" : "") +
                                 (avisos.Count > 0 ? "\n\nAvisos:\n" + string.Join("\n", avisos.Distinct().Take(5)) : "");
             return resultado;
+        }
+
+        //Lo que hace falta para mover el ejemplar si el eje o su placement cambian
+        private static Receta Receta(OpcionesSubestructura o, Placement placement, double lateral) =>
+            new Receta(Recetas.Subestructura)
+                .Con("placement", placement.Id).Con("estacion", placement.Estacion).Con("lateral", lateral)
+                .Con("vertical", o.Ubicacion.DesplazamientoVertical).Con("giro", o.Ubicacion.GiroAdicional).Con("siempreVertical", o.Ubicacion.SiempreVertical)
+                .Con("parametroAltura", o.ParametroAltura ?? "").Con("cotaFundacion", o.CotaFundacion).Con("longitud", o.LongitudTransversal);
+
+        /// <summary>
+        ///     Lleva un ejemplar ya colocado a su sitio sobre el eje cambiado (mismo placement, mismos desplazamientos),
+        ///     sin borrarlo: conserva su tipo, marca y demas parametros. Debe llamarse dentro de una transaccion.
+        /// </summary>
+        public static string Reubicar(Document doc, FamilyInstance ejemplar, EjeGuardado ejeGuardado, Receta receta)
+        {
+            Eje eje = ejeGuardado.Eje;
+            Transform transformacion = ejeGuardado.Transformacion;
+            string id = receta.Texto("placement");
+            Placement? actual = eje.BuscarPlacement(id);
+            Placement placement = actual ?? new Placement { Id = id, Estacion = Recetas.Estacion(eje, "", receta.Numero("estacion")) };
+
+            OpcionesUbicacion ubicacion = new OpcionesUbicacion
+            {
+                DesplazamientoLateral = receta.Numero("lateral"),
+                DesplazamientoVertical = receta.Numero("vertical"),
+                GiroAdicional = receta.Numero("giro"),
+                SiempreVertical = receta.SiNo("siempreVertical", true)
+            };
+            Ubicacion3 u = UbicacionSubestructura.Calcular(eje, placement, ubicacion);
+            XYZ origen = transformacion.OfPoint(CreadorEje.APies(u.Origen));
+            XYZ x = transformacion.OfVector(new XYZ(u.EjeX.X, u.EjeX.Y, u.EjeX.Z)).Normalize();
+            XYZ z = transformacion.OfVector(new XYZ(u.EjeZ.X, u.EjeZ.Y, u.EjeZ.Z)).Normalize();
+            double cotaFundacion = receta.Numero("cotaFundacion");
+            double fundacion = transformacion.OfPoint(CreadorEje.APies(new Punto3(0, 0, cotaFundacion))).Z;
+
+            switch (Modo(ejemplar.Symbol.Family))
+            {
+                case ModoSubestructura.Adaptativa:
+                    ReferencePoint punto = (ReferencePoint)doc.GetElement(AdaptiveComponentInstanceUtils.GetInstancePlacementPointElementRefIds(ejemplar).First());
+                    Transform sistema = Transform.Identity;
+                    sistema.Origin = origen;
+                    sistema.BasisX = x;
+                    sistema.BasisY = z.CrossProduct(x).Normalize();
+                    sistema.BasisZ = z;
+                    try
+                    {
+                        punto.SetCoordinateSystem(sistema);
+                    }
+                    catch (Autodesk.Revit.Exceptions.ApplicationException)
+                    {
+                        punto.Position = origen;
+                    }
+
+                    break;
+                case ModoSubestructura.PorLinea:
+                    if (ejemplar.Location is LocationCurve curva)
+                    {
+                        Punto2 plano = PlacementsEje.DireccionPlano(eje, new Placement { Estacion = placement.Estacion, Rotacion = placement.Rotacion + ubicacion.GiroAdicional });
+                        XYZ mitad = transformacion.OfVector(new XYZ(plano.X, plano.Y, 0)).Normalize() * (UnitUtils.ConvertToInternalUnits(receta.Numero("longitud", 10), UnitTypeId.Meters) / 2);
+                        curva.Curve = Line.CreateBound(origen + mitad, origen - mitad);
+                    }
+
+                    break;
+                case ModoSubestructura.EntreNiveles:
+                    XYZ pie = new XYZ(origen.X, origen.Y, fundacion);
+                    Parameter? cabeza = ejemplar.get_Parameter(BuiltInParameter.FAMILY_TOP_LEVEL_PARAM);
+                    if (cabeza != null && !cabeza.IsReadOnly && doc.GetElement(cabeza.AsElementId()) is Level nivelCabeza &&
+                        doc.GetElement(ejemplar.get_Parameter(BuiltInParameter.FAMILY_BASE_LEVEL_PARAM)?.AsElementId() ?? ElementId.InvalidElementId) is Level nivelBase)
+                    {
+                        ejemplar.get_Parameter(BuiltInParameter.FAMILY_BASE_LEVEL_OFFSET_PARAM)?.Set(fundacion - nivelBase.Elevation);
+                        ejemplar.get_Parameter(BuiltInParameter.FAMILY_TOP_LEVEL_OFFSET_PARAM)?.Set(origen.Z - nivelCabeza.Elevation);
+                        doc.Regenerate();
+                        MoverEnPlanta(doc, ejemplar, pie);
+                    }
+                    else
+                    {
+                        doc.Regenerate();
+                        LlevarA(doc, ejemplar, pie);
+                    }
+
+                    GirarA(doc, ejemplar, x);
+                    break;
+                default:
+                    LlevarA(doc, ejemplar, origen);
+                    GirarA(doc, ejemplar, x);
+                    break;
+            }
+
+            string altura = receta.Texto("parametroAltura");
+            if (altura.Length > 0 && ejemplar.LookupParameter(altura) is Parameter p && !p.IsReadOnly && p.StorageType == StorageType.Double)
+                p.Set(UnitUtils.ConvertToInternalUnits(UbicacionSubestructura.Altura(u, cotaFundacion), UnitTypeId.Meters));
+
+            double lateral = receta.Numero("lateral");
+            ejemplar.get_Parameter(BuiltInParameter.ALL_MODEL_INSTANCE_COMMENTS)?
+                .Set($"Subestructura | Eje {eje.Nombre} | {placement.Id} | {Eje.FormatoEstacion(placement.Estacion)}" + (Math.Abs(lateral) > 1e-9 ? $" | derecha {lateral:0.###} m" : ""));
+            receta.Con("estacion", placement.Estacion);
+            return actual == null ? $"{ejemplar.Name} ({ejemplar.Id}): el placement {id} ya no existe; queda en su estación {Eje.FormatoEstacion(placement.Estacion)}." : "";
+        }
+
+        //Mueve solo en planta (la cota la dan los desfases de nivel)
+        private static void MoverEnPlanta(Document doc, FamilyInstance ejemplar, XYZ destino)
+        {
+            if (ejemplar.Location is not LocationPoint punto) return;
+            XYZ delta = new XYZ(destino.X - punto.Point.X, destino.Y - punto.Point.Y, 0);
+            if (delta.GetLength() > 1e-6) ElementTransformUtils.MoveElement(doc, ejemplar.Id, delta);
+        }
+
+        //Gira en planta hasta que su eje X mire en el sentido dado
+        private static void GirarA(Document doc, FamilyInstance ejemplar, XYZ x)
+        {
+            if (ejemplar.Location is not LocationPoint punto) return;
+            double giro = Math.Atan2(x.Y, x.X) - punto.Rotation;
+            while (giro > Math.PI) giro -= 2 * Math.PI;
+            while (giro < -Math.PI) giro += 2 * Math.PI;
+            if (Math.Abs(giro) > 1e-9)
+                ElementTransformUtils.RotateElement(doc, ejemplar.Id, Line.CreateBound(punto.Point, punto.Point + XYZ.BasisZ), giro);
         }
 
         /// <summary>

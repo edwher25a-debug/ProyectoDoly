@@ -44,6 +44,15 @@ namespace ProyectoDoly.Commands
 
                 paso = "dibujar el eje secundario";
                 ResultadoEje resultado = CreadorEje.CrearDerivado(doc, viewModel.Resultado, viewModel.EjeSelecc, viewModel.Descripcion);
+
+                //Queda atado al principal: si este cambia, se vuelve a calcular
+                if (viewModel.OpcionesUsadas != null && doc.GetElement(resultado.Id) is Element secundario && doc.GetElement(viewModel.EjeSelecc.Id) is Element principal)
+                    using (Transaction transaccion = new Transaction(doc, "Atar eje secundario"))
+                    {
+                        transaccion.Start();
+                        DatosDependencia.Guardar(secundario, principal, Puentes.Dependencias.Recetas.DeEjeSecundario(viewModel.OpcionesUsadas));
+                        transaccion.Commit();
+                    }
                 uidoc.Selection.SetElementIds(new List<ElementId> { resultado.Id });
                 TaskDialog.Show("Eje secundario", resultado.Resumen);
                 return Result.Succeeded;

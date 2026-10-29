@@ -40,6 +40,8 @@ namespace ProyectoDoly.Puentes
 
                 if (!simbolo.IsActive) simbolo.Activate();
                 ElementId material = MaterialHormigon(doc);
+                Element? ejeElemento = doc.GetElement(opciones.Eje.Id);
+                string receta = opciones.Receta().Escribir();
 
                 for (int k = 0; k < puntos.Count - 1; k++)
                 {
@@ -52,6 +54,7 @@ namespace ProyectoDoly.Puentes
                     ejemplar.get_Parameter(BuiltInParameter.ALL_MODEL_INSTANCE_COMMENTS)?
                         .Set($"{opciones.NombreTablero} | tramo {k + 1} | {Eje.FormatoEstacion(enEstacion[k])} a {Eje.FormatoEstacion(enEstacion[k + 1])}" +
                              ValoresTramo(opciones.Variables, enEstacion[k], enEstacion[k + 1]));
+                    if (ejeElemento != null) DatosDependencia.Guardar(ejemplar, ejeElemento, Dependencias.Receta.Leer(receta));
                     ejemplares.Add(ejemplar.Id);
                 }
 

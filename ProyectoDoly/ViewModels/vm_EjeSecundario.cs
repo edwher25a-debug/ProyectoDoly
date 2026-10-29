@@ -22,6 +22,9 @@ namespace ProyectoDoly.ViewModels
 
         public Eje? Resultado { get; private set; }
         public string Descripcion { get; private set; } = "";
+
+        //Para volver a crear el eje secundario si cambia el principal
+        public OpcionesEjeSecundario? OpcionesUsadas { get; private set; }
         public Action<bool>? Cerrar { get; set; }
 
         public ObservableCollection<EjeGuardado> Ejes { get; } = new ObservableCollection<EjeGuardado>();
@@ -168,7 +171,8 @@ namespace ProyectoDoly.ViewModels
                 if (valores.Count < 2) throw new ArgumentException("Escriba al menos dos puntos estación = desplazamiento.");
             }
 
-            Eje secundario = EjeSecundario.Crear(principal, new OpcionesEjeSecundario { Nombre = limpio, Derecha = valores, Subir = subirValor });
+            OpcionesEjeSecundario opciones = new OpcionesEjeSecundario { Nombre = limpio, Derecha = valores, Subir = subirValor };
+            Eje secundario = EjeSecundario.Crear(principal, opciones);
 
             Resumen = $"Eje \"{secundario.Nombre}\"\n" +
                       $"Estaciones: {Eje.FormatoEstacion(secundario.EstacionInicial)} a {Eje.FormatoEstacion(secundario.EstacionFinal)}\n" +
@@ -181,6 +185,7 @@ namespace ProyectoDoly.ViewModels
             Descripcion = $"Eje secundario | {secundario.Nombre} | de {principal.Nombre} | " +
                           (Constante ? $"derecha {Texto(valores[0].Item2)} m" : string.Join("; ", valores.Select(v => $"{Eje.FormatoEstacion(v.Item1)}={Texto(v.Item2)}"))) +
                           (Math.Abs(subirValor) > 1e-9 ? $" | subir {Texto(subirValor)} m" : "");
+            OpcionesUsadas = opciones;
             listo = secundario;
         }
 

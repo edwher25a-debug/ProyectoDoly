@@ -21,6 +21,7 @@
         <Compile Include="..\ProyectoDoly\Puentes\Subestructura\*.cs" Link="Puentes\Subestructura\%(Filename)%(Extension)" />
         <Compile Include="..\ProyectoDoly\Puentes\Planos\*.cs" Link="Puentes\Planos\%(Filename)%(Extension)" />
         <Compile Include="..\ProyectoDoly\Puentes\Cuantificacion\*.cs" Link="Puentes\Cuantificacion\%(Filename)%(Extension)" />
+        <Compile Include="..\ProyectoDoly\Puentes\Dependencias\*.cs" Link="Puentes\Dependencias\%(Filename)%(Extension)" />
     </ItemGroup>
 
     <ItemGroup>

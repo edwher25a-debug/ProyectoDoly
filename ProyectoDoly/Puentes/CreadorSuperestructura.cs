@@ -1,4 +1,5 @@
 using Autodesk.Revit.DB;
+using ProyectoDoly.Puentes.Dependencias;
 using ProyectoDoly.Puentes.Ejes;
 using ProyectoDoly.Puentes.Superestructura;
 
@@ -25,6 +26,12 @@ namespace ProyectoDoly.Puentes
         public static readonly string[] Componentes = { "Tablero", "Parapeto", "Baranda", "Bordillo", "Viga" };
         public string Componente { get; set; } = "Tablero";
 
+        //Para rehacer el tablero si el eje cambia: tipo de la familia de seccion (UniqueId) con que se evaluan los
+        //parametros variables, si la seccion se reflejo al evaluarla, y una clave comun a todos los tramos de este tablero
+        public string TipoSeccion { get; set; } = "";
+        public bool EspejoVariables { get; set; }
+        public string Grupo { get; set; } = Guid.NewGuid().ToString("N");
+
         public string NombreTablero => $"{Componente} {Eje.Eje.Nombre}" + (Nombre.Length > 0 ? $" {Nombre}" : "");
 
         //Copia para otro tramo de estaciones (las secciones por estacion se recalculan aparte)
@@ -36,6 +43,8 @@ namespace ProyectoDoly.Puentes
             Variables = Variables,
             Componente = Componente,
             Nombre = nombre,
+            TipoSeccion = TipoSeccion,
+            EspejoVariables = EspejoVariables,
             Barrido = new OpcionesBarrido
             {
                 EstacionInicial = desde,
@@ -69,6 +78,53 @@ namespace ProyectoDoly.Puentes
             for (int i = 0; i < estaciones.Count - 1; i++)
                 volumen += (secciones[i].Area + secciones[i + 1].Area) / 2 * (estaciones[i + 1] - estaciones[i]);
             return volumen;
+        }
+
+        //Receta del tablero: lo que hace falta para volver a crearlo sobre el eje cambiado. Los extremos siguen al
+        //placement o al extremo del eje en que estaban
+        public Receta Receta()
+        {
+            Eje eje = Eje.Eje;
+            string Placement(double estacion) => eje.Placements.FirstOrDefault(p => Math.Abs(p.Estacion - estacion) < 1e-3)?.Id ?? "";
+            return new Receta(Recetas.Superestructura)
+                .Con("grupo", Grupo).Con("componente", Componente).Con("nombre", Nombre).Con("adaptativa", FamiliaAdaptativa)
+                .Con("seccionNombre", Seccion.Nombre).Con("seccion", Dependencias.Receta.Seccion(Seccion))
+                .Con("desde", Barrido.EstacionInicial).Con("hasta", Barrido.EstacionFinal)
+                .Con("desdePlacement", Placement(Barrido.EstacionInicial)).Con("hastaPlacement", Placement(Barrido.EstacionFinal))
+                .Con("desdeInicio", Math.Abs(Barrido.EstacionInicial - eje.EstacionInicial) < 1e-3)
+                .Con("hastaFin", Math.Abs(Barrido.EstacionFinal - eje.EstacionFinal) < 1e-3)
+                .Con("paso", Barrido.Paso).Con("lateral", Barrido.DesplazamientoLateral).Con("vertical", Barrido.DesplazamientoVertical)
+                .Con("extra", Dependencias.Receta.Lista(Barrido.EstacionesExtra))
+                .Con("variables", Dependencias.Receta.Variables(Variables)).Con("tipoSeccion", TipoSeccion).Con("espejo", EspejoVariables);
+        }
+
+        //El mismo tablero sobre el eje (ya cambiado). Las secciones por estacion se calculan aparte si hay variables
+        public static OpcionesSuperestructura DesdeReceta(Receta r, EjeGuardado eje)
+        {
+            Eje e = eje.Eje;
+            double desde = r.SiNo("desdeInicio") ? e.EstacionInicial : Recetas.Estacion(e, r.Texto("desdePlacement"), r.Numero("desde"));
+            double hasta = r.SiNo("hastaFin") ? e.EstacionFinal : Recetas.Estacion(e, r.Texto("hastaPlacement"), r.Numero("hasta"));
+            return new OpcionesSuperestructura
+            {
+                Eje = eje,
+                Seccion = Dependencias.Receta.Seccion(r.Texto("seccionNombre"), r.Texto("seccion")),
+                FamiliaAdaptativa = r.SiNo("adaptativa", true),
+                Variables = Dependencias.Receta.Variables(r.Texto("variables")),
+                Componente = r.Texto("componente", "Tablero"),
+                Nombre = r.Texto("nombre"),
+                TipoSeccion = r.Texto("tipoSeccion"),
+                EspejoVariables = r.SiNo("espejo"),
+                Grupo = r.Texto("grupo", Guid.NewGuid().ToString("N")),
+                Barrido = new OpcionesBarrido
+                {
+                    EstacionInicial = desde,
+                    EstacionFinal = hasta,
+                    Paso = r.Numero("paso", 1),
+                    DesplazamientoLateral = r.Numero("lateral"),
+                    DesplazamientoVertical = r.Numero("vertical"),
+                    EstacionesExtra = Dependencias.Receta.Lista(r.Texto("extra")).Where(x => x > desde && x < hasta).ToList()
+                }
+            };
         }
 
         public string TextoVariables =>
@@ -129,6 +185,7 @@ namespace ProyectoDoly.Puentes
                 forma.SetShape(geometria);
                 forma.SetName(opciones.NombreTablero);
                 forma.get_Parameter(BuiltInParameter.ALL_MODEL_INSTANCE_COMMENTS)?.Set(Descripcion(opciones));
+                if (doc.GetElement(opciones.Eje.Id) is Element ejeElemento) DatosDependencia.Guardar(forma, ejeElemento, opciones.Receta());
 
                 transaccion.Commit();
 

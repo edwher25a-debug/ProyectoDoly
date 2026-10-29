@@ -125,6 +125,18 @@ namespace ProyectoDoly
 
             panelPuentes.AddItem(invertirEje);
 
+            var actualizarEje = new PushButtonData(nameof(ActualizarEjeCmd), "Actualizar\ndesde eje",
+                Assembly.GetExecutingAssembly().Location, typeof(ActualizarEjeCmd).FullName)
+            {
+                ToolTip = "Vuelve a ajustar al eje seleccionado los ejes secundarios, tableros y pilas creados sobre él.",
+                LongDescription = "Se hace solo al editar el eje con Eje por tabla o al cambiar sus placements. Las pilas se mueven a su placement " +
+                                  "sin borrarse; los tableros se vuelven a crear con la misma sección y desplazamientos.",
+                LargeImage = new BitmapImage(new Uri("pack://application:,,,/ProyectoDoly;component/Resources/Icons/ActualizarEje32.png")),
+                Image = new BitmapImage(new Uri("pack://application:,,,/ProyectoDoly;component/Resources/Icons/ActualizarEje16.png"))
+            };
+
+            panelPuentes.AddItem(actualizarEje);
+
             var superestructura = new PushButtonData(nameof(SuperestructuraCmd), "Super-\nestructura",
                 Assembly.GetExecutingAssembly().Location, typeof(SuperestructuraCmd).FullName)
             {
