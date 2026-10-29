@@ -5,19 +5,13 @@ using ProyectoDoly.Puentes.Ejes;
 
 namespace ProyectoDoly.ViewModels
 {
-    //Eje dibujado con lineas del modelo o, sin lineas, escrito en una tabla de PI
     public sealed class vm_EjeDesdeLineas : ObservableObject
     {
-        private readonly List<TramoDibujado>? tramos;
+        private readonly List<TramoDibujado> tramos;
         private readonly Punto2? cercaDe;
         private readonly List<string> existentes;
 
-        //Por tabla de PI
-        public vm_EjeDesdeLineas(List<string> existentes) : this(null, null, 0, existentes)
-        {
-        }
-
-        public vm_EjeDesdeLineas(List<TramoDibujado>? tramos, Punto2? cercaDe, double cotaSugerida, List<string> existentes)
+        public vm_EjeDesdeLineas(List<TramoDibujado> tramos, Punto2? cercaDe, double cotaSugerida, List<string> existentes)
         {
             this.tramos = tramos;
             this.cercaDe = cercaDe;
@@ -25,7 +19,7 @@ namespace ProyectoDoly.ViewModels
             CrearBT = new RelayCommand(Crear, () => PuedeCrear);
             CancelarBT = new RelayCommand(() => Cerrar?.Invoke(false));
 
-            nombre = Libre(tramos == null ? "Eje por tabla" : "Eje dibujado");
+            nombre = Libre("Eje dibujado");
             cotaInicial = Texto(cotaSugerida);
             Actualizar();
         }
@@ -34,24 +28,6 @@ namespace ProyectoDoly.ViewModels
         public string Descripcion { get; private set; } = "";
         public double MarcasCadaValor { get; private set; } = 20;
         public Action<bool>? Cerrar { get; set; }
-
-        public bool PorTabla => tramos == null;
-        public bool PorLineas => tramos != null;
-        public string Titulo => PorTabla ? "Eje por tabla" : "Eje desde líneas";
-        public string Subtitulo => PorTabla
-            ? "Crea el eje con sus puntos de inflexión, radios y clotoides, sin LandXML, y le pone rasante."
-            : "Crea el eje con las rectas y arcos elegidos, sin LandXML, y le pone rasante.";
-
-        //Tabla de PI: X; Y; radio; clotoide
-        private string tablaPi = "";
-        public string TablaPi
-        {
-            get => tablaPi;
-            set
-            {
-                if (SetProperty(ref tablaPi, value)) Actualizar();
-            }
-        }
 
         //1_Nombre y estaciones
         private string nombre;
@@ -217,44 +193,31 @@ namespace ProyectoDoly.ViewModels
                 if (opciones.Piv.Count < 2) throw new ArgumentException("Escriba al menos dos PIV en la tabla: estación = cota (y / longitud de curva si la tiene).");
             }
 
-            ResultadoEjeDesdeTramos r;
-            List<PuntoInflexion> pis = new List<PuntoInflexion>();
-            if (tramos == null)
+            //Al reves: se empieza por el otro extremo libre de la cadena
+            if (AlReves)
             {
-                pis = EjePorTabla.Leer(TablaPi);
-                if (pis.Count < 2) throw new ArgumentException("Escriba al menos dos PI, uno por línea: X; Y; radio; clotoide (los dos últimos opcionales).");
-                r = EjePorTabla.Crear(pis, opciones);
+                List<TramoDibujado> cadena = EjeDesdeTramos.Encadenar(tramos, opciones.Tolerancia, cercaDe);
+                opciones.CercaDe = cadena[cadena.Count - 1].Fin;
             }
-            else
-            {
-                //Al reves: se empieza por el otro extremo libre de la cadena
-                if (AlReves)
-                {
-                    List<TramoDibujado> cadena = EjeDesdeTramos.Encadenar(tramos, opciones.Tolerancia, cercaDe);
-                    opciones.CercaDe = cadena[cadena.Count - 1].Fin;
-                }
 
-                r = EjeDesdeTramos.Crear(tramos, opciones);
-            }
+            ResultadoEjeDesdeTramos r = EjeDesdeTramos.Crear(tramos, opciones);
 
             Eje eje = r.Eje;
             if (!ConPendiente && (opciones.Piv[0].Estacion > eje.EstacionInicial + 1e-3 || opciones.Piv[opciones.Piv.Count - 1].Estacion < eje.EstacionFinal - 1e-3))
                 throw new ArgumentException($"La tabla de rasante debe cubrir todo el eje, de {Eje.FormatoEstacion(eje.EstacionInicial)} a {Eje.FormatoEstacion(eje.EstacionFinal)}.");
 
             Resumen = $"Eje \"{eje.Nombre}\"\n" +
-                      (tramos == null
-                          ? $"{pis.Count} PI, {r.Arcos} curvas ({eje.Horizontal.Elementos.Count(e => e.Tipo == TipoElemento.Clotoide)} clotoides)\n"
-                          : $"{r.Rectas} rectas y {r.Arcos} arcos encadenados\n") +
+                      $"{r.Rectas} rectas y {r.Arcos} arcos encadenados\n" +
                       $"Estaciones: {Eje.FormatoEstacion(eje.EstacionInicial)} a {Eje.FormatoEstacion(eje.EstacionFinal)}\n" +
                       $"Longitud: {eje.Horizontal.Longitud:F3} m\n" +
                       $"Cota: {eje.Vertical.CotaEn(eje.EstacionInicial):F2} m al inicio, {eje.Vertical.CotaEn(eje.EstacionFinal):F2} m al final" +
                       (r.Quiebres.Count > 0
-                          ? (tramos == null ? "\n\nQuiebres (PI sin radio):\n" : "\n\nQuiebres (las piezas no son tangentes):\n") + string.Join("\n", r.Quiebres.Take(6).Select(q => $"{Eje.FormatoEstacion(q.estacion)}: {q.grados:0.##}°")) +
+                          ? "\n\nQuiebres (las piezas no son tangentes):\n" + string.Join("\n", r.Quiebres.Take(6).Select(q => $"{Eje.FormatoEstacion(q.estacion)}: {q.grados:0.##}°")) +
                             (r.Quiebres.Count > 6 ? $"\n(y {r.Quiebres.Count - 6} más)" : "")
                           : "\n\nTodas las uniones son tangentes.");
 
             Descripcion = $"Eje | {eje.Nombre} | {Eje.FormatoEstacion(eje.EstacionInicial)} a {Eje.FormatoEstacion(eje.EstacionFinal)} | " +
-                          (tramos == null ? $"tabla de {pis.Count} PI | " : $"dibujado desde {tramos.Count} líneas | ") +
+                          $"dibujado desde {tramos.Count} líneas | " +
                           (ConPendiente ? $"cota {Texto(opciones.CotaInicial)} m, pendiente {Texto(opciones.PendientePorciento)} %" : $"{opciones.Piv.Count} PIV");
             MarcasCadaValor = marcas;
             listo = eje;

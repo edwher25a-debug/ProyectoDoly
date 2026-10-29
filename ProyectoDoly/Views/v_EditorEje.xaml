@@ -1,0 +1,257 @@
+<Window x:Class="ProyectoDoly.Views.v_EditorEje"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
+        Title="{Binding Titulo}" Width="1180" Height="760" MinWidth="980" MinHeight="600"
+        WindowStartupLocation="CenterScreen" ResizeMode="CanResizeWithGrip"
+        Background="{DynamicResource Fondo}" Foreground="{DynamicResource Texto}">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/ProyectoDoly;component/Views/Estilos.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <x:Array x:Key="TiposElemento" Type="sys:String">
+                <sys:String>Recta</sys:String>
+                <sys:String>Clotoide</sys:String>
+                <sys:String>Arco</sys:String>
+            </x:Array>
+            <Style x:Key="CeldaRadioInicio" TargetType="DataGridCell">
+                <Setter Property="IsEnabled" Value="{Binding UsaRadioInicio}"/>
+            </Style>
+            <Style x:Key="CeldaRadioFin" TargetType="DataGridCell">
+                <Setter Property="IsEnabled" Value="{Binding UsaRadioFin}"/>
+            </Style>
+            <Style x:Key="CeldaCalculada" TargetType="DataGridCell">
+                <Setter Property="Foreground" Value="{StaticResource TextoSuave}"/>
+            </Style>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <DockPanel>
+        <!--Encabezado-->
+        <Border DockPanel.Dock="Top" Background="{StaticResource Primario}" Padding="20,14">
+            <DockPanel>
+                <Image DockPanel.Dock="Left" Source="/ProyectoDoly;component/Resources/Icons/EjePorTabla32.png" Width="32" Height="32" Margin="0,0,12,0"/>
+                <StackPanel>
+                    <TextBlock Text="{Binding Titulo}" Foreground="White" FontSize="18" FontWeight="SemiBold"/>
+                    <TextBlock Text="Eje elemento por elemento: rectas, clotoides y arcos, con su rasante y sus placements." Foreground="{StaticResource MenuTexto}" Margin="0,2,0,0"/>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <!--Botones-->
+        <Border DockPanel.Dock="Bottom" Background="White" BorderBrush="{StaticResource Borde}" BorderThickness="0,1,0,0" Padding="20,10">
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                    <Button Content="Cancelar" Background="{StaticResource TextoSuave}" Command="{Binding CancelarBT}" IsCancel="True"/>
+                    <Button Content="{Binding TextoBoton}" Background="{StaticResource Acento}" Command="{Binding CrearBT}" FontWeight="SemiBold"/>
+                </StackPanel>
+                <TextBlock Text="{Binding Error}" Foreground="{StaticResource Error}" VerticalAlignment="Center" TextWrapping="Wrap"/>
+            </DockPanel>
+        </Border>
+
+        <Grid Margin="20,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="20"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <DockPanel>
+                <!--Datos del eje-->
+                <GroupBox DockPanel.Dock="Top" Header="Datos del eje">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="90"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="110"/>
+                            <ColumnDefinition Width="30"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="80"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="80"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition/>
+                            <RowDefinition/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Text="Origen  " VerticalAlignment="Center"/>
+                        <TextBlock Grid.Column="1" Text="X  " VerticalAlignment="Center"/>
+                        <TextBox Grid.Column="2" Text="{Binding OrigenX, UpdateSourceTrigger=PropertyChanged}"/>
+                        <TextBlock Grid.Column="3" Text="  Y  " VerticalAlignment="Center"/>
+                        <TextBox Grid.Column="4" Text="{Binding OrigenY, UpdateSourceTrigger=PropertyChanged}"/>
+                        <TextBlock Grid.Column="6" Text="Dirección al inicio  " VerticalAlignment="Center"/>
+                        <TextBlock Grid.Column="7" Text="X  " VerticalAlignment="Center"/>
+                        <TextBox Grid.Column="8" Text="{Binding DireccionX, UpdateSourceTrigger=PropertyChanged}"/>
+                        <TextBlock Grid.Column="9" Text="  Y  " VerticalAlignment="Center"/>
+                        <TextBox Grid.Column="10" Text="{Binding DireccionY, UpdateSourceTrigger=PropertyChanged}"/>
+
+                        <TextBlock Grid.Row="1" Text="Coordenadas  " VerticalAlignment="Center"/>
+                        <ComboBox Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="4" ItemsSource="{Binding Sistemas}" SelectedItem="{Binding Sistema}" IsEnabled="{Binding Nuevo}"
+                                  ToolTip="Proyecto: respecto al punto base del proyecto. Compartidas: coordenadas topográficas. Interno: origen interno de Revit. Al editar se conservan las del eje."/>
+                        <TextBlock Grid.Row="1" Grid.Column="6" Text="Estación inicial  " VerticalAlignment="Center"/>
+                        <TextBox Grid.Row="1" Grid.Column="7" Grid.ColumnSpan="2" Text="{Binding EstacionInicial, UpdateSourceTrigger=PropertyChanged}"/>
+                        <TextBlock Grid.Row="1" Grid.Column="9" Text="  ID  " VerticalAlignment="Center"/>
+                        <TextBox Grid.Row="1" Grid.Column="10" Text="{Binding Nombre, UpdateSourceTrigger=PropertyChanged}"/>
+                    </Grid>
+                </GroupBox>
+
+                <TabControl>
+                    <!--Horizontal-->
+                    <TabItem Header="Horizontal">
+                        <DockPanel Margin="8">
+                            <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="0,6,0,0">
+                                <Button Content="Agregar" Command="{Binding AgregarBT}"/>
+                                <Button Content="Quitar" Background="{StaticResource TextoSuave}" Command="{Binding QuitarBT}"/>
+                                <TextBlock Style="{StaticResource Ayuda}" VerticalAlignment="Center" Margin="12,0,0,0"
+                                           Text="Radio + = curva a la derecha, − = a la izquierda. En una clotoide, 0 o vacío = recta (radio infinito)."/>
+                            </StackPanel>
+                            <StackPanel DockPanel.Dock="Right" Margin="6,0,0,0">
+                                <Button Content="↑" Width="30" Padding="0,4" Command="{Binding SubirBT}" ToolTip="Subir el elemento"/>
+                                <Button Content="↓" Width="30" Padding="0,4" Command="{Binding BajarBT}" ToolTip="Bajar el elemento"/>
+                            </StackPanel>
+                            <DataGrid ItemsSource="{Binding Filas}" SelectedItem="{Binding FilaSelecc}" AutoGenerateColumns="False" CanUserAddRows="False"
+                                      CanUserDeleteRows="False" CanUserSortColumns="False" HeadersVisibility="Column" SelectionMode="Single">
+                                <DataGrid.Columns>
+                                    <DataGridComboBoxColumn Header="Tipo" ItemsSource="{StaticResource TiposElemento}" SelectedItemBinding="{Binding Tipo, UpdateSourceTrigger=PropertyChanged}" Width="110"/>
+                                    <DataGridTextColumn Header="Longitud (m)" Binding="{Binding Longitud, UpdateSourceTrigger=LostFocus}" Width="*"/>
+                                    <DataGridTextColumn Header="Radio inicial (m)" Binding="{Binding RadioInicio, UpdateSourceTrigger=LostFocus}" Width="*" CellStyle="{StaticResource CeldaRadioInicio}"/>
+                                    <DataGridTextColumn Header="Radio final (m)" Binding="{Binding RadioFin, UpdateSourceTrigger=LostFocus}" Width="*" CellStyle="{StaticResource CeldaRadioFin}"/>
+                                    <DataGridTextColumn Header="Estación final" Binding="{Binding Estacion}" IsReadOnly="True" Width="*" CellStyle="{StaticResource CeldaCalculada}"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </DockPanel>
+                    </TabItem>
+
+                    <!--Vertical-->
+                    <TabItem Header="Vertical">
+                        <DockPanel Margin="8">
+                            <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="0,6,0,0">
+                                <Button Content="Agregar PIV" Command="{Binding AgregarPivBT}"/>
+                                <Button Content="Quitar" Background="{StaticResource TextoSuave}" Command="{Binding QuitarPivBT}"/>
+                                <TextBlock Style="{StaticResource Ayuda}" VerticalAlignment="Center" Margin="12,0,0,0" TextWrapping="Wrap" MaxWidth="440"
+                                           Text="Sin PIV el eje queda a cota 0; con uno, horizontal a esa cota. La longitud de curva es la de la parábola en ese PIV (0 = vértice)."/>
+                            </StackPanel>
+                            <DataGrid ItemsSource="{Binding FilasPiv}" SelectedItem="{Binding PivSelecc}" AutoGenerateColumns="False" CanUserAddRows="False"
+                                      CanUserDeleteRows="False" HeadersVisibility="Column" SelectionMode="Single">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Estación" Binding="{Binding Estacion, UpdateSourceTrigger=LostFocus}" Width="*"/>
+                                    <DataGridTextColumn Header="Cota (m)" Binding="{Binding Cota, UpdateSourceTrigger=LostFocus}" Width="*"/>
+                                    <DataGridTextColumn Header="Longitud de curva (m)" Binding="{Binding Curva, UpdateSourceTrigger=LostFocus}" Width="*"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </DockPanel>
+                    </TabItem>
+
+                    <!--Placements-->
+                    <TabItem Header="Placements">
+                        <DockPanel Margin="8">
+                            <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="0,6,0,0">
+                                <Button Content="Agregar" Command="{Binding AgregarPlacementBT}"/>
+                                <Button Content="Quitar" Background="{StaticResource TextoSuave}" Command="{Binding QuitarPlacementBT}"/>
+                                <TextBlock Style="{StaticResource Ayuda}" VerticalAlignment="Center" Margin="12,0,0,0"
+                                           Text="Giro en grados respecto a la perpendicular al eje (+ antihorario): 0 = apoyo recto."/>
+                            </StackPanel>
+                            <DataGrid ItemsSource="{Binding FilasPlacement}" SelectedItem="{Binding PlacementSelecc}" AutoGenerateColumns="False" CanUserAddRows="False"
+                                      CanUserDeleteRows="False" HeadersVisibility="Column" SelectionMode="Single">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="ID" Binding="{Binding Id, UpdateSourceTrigger=LostFocus}" Width="*"/>
+                                    <DataGridTextColumn Header="Estación" Binding="{Binding Estacion, UpdateSourceTrigger=LostFocus}" Width="*"/>
+                                    <DataGridTextColumn Header="Giro (°)" Binding="{Binding Rotacion, UpdateSourceTrigger=LostFocus}" Width="*"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </DockPanel>
+                    </TabItem>
+
+                    <!--Desde PI-->
+                    <TabItem Header="Desde PI">
+                        <DockPanel Margin="8">
+                            <StackPanel DockPanel.Dock="Bottom" Margin="0,6,0,0">
+                                <StackPanel Orientation="Horizontal">
+                                    <Button Content="Pasar a la tabla de elementos" Command="{Binding PasarPiBT}"/>
+                                    <TextBlock Text="{Binding MensajePi}" VerticalAlignment="Center" Margin="10,0,0,0" TextWrapping="Wrap" MaxWidth="460"/>
+                                </StackPanel>
+                                <TextBlock Style="{StaticResource Ayuda}" Margin="0,4,0,0" TextWrapping="Wrap"
+                                           Text="Un PI por línea: X; Y; radio; clotoide (m), o pegue las columnas desde Excel. En cada PI intermedio va una curva con clotoides simétricas; sin radio, un vértice. Reemplaza los elementos de la pestaña Horizontal, el origen y la dirección."/>
+                            </StackPanel>
+                            <TextBox Text="{Binding TablaPi, UpdateSourceTrigger=PropertyChanged}" FontFamily="Consolas"
+                                     AcceptsReturn="True" AcceptsTab="True" TextWrapping="NoWrap" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"/>
+                        </DockPanel>
+                    </TabItem>
+
+                    <!--Dibujo-->
+                    <TabItem Header="Dibujo">
+                        <StackPanel Margin="8">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="Marcas de estación cada (m)  " VerticalAlignment="Center"/>
+                                <TextBox Width="80" Text="{Binding MarcasCada, UpdateSourceTrigger=PropertyChanged}"/>
+                            </StackPanel>
+                            <TextBlock Style="{StaticResource Ayuda}" Margin="0,6,0,0" TextWrapping="Wrap"
+                                       Text="El eje queda igual que uno importado: sirve para Superestructura, Subestructura, Secciones y las demás herramientas. Para editarlo después, selecciónelo y pulse de nuevo Eje por tabla."/>
+                        </StackPanel>
+                    </TabItem>
+                </TabControl>
+            </DockPanel>
+
+            <!--Vista previa-->
+            <GroupBox Grid.Column="2" Header="Vista previa" VerticalAlignment="Top">
+                <StackPanel Width="360">
+                    <DockPanel Margin="0,0,0,4">
+                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                            <Rectangle Width="14" Height="4" Fill="#1E4A63" VerticalAlignment="Center"/>
+                            <TextBlock Text=" recta   " Style="{StaticResource Subtitulo}"/>
+                            <Rectangle Width="14" Height="4" Fill="#F28C28" VerticalAlignment="Center"/>
+                            <TextBlock Text=" clotoide   " Style="{StaticResource Subtitulo}"/>
+                            <Rectangle Width="14" Height="4" Fill="#2A9D8F" VerticalAlignment="Center"/>
+                            <TextBlock Text=" arco" Style="{StaticResource Subtitulo}"/>
+                        </StackPanel>
+                        <TextBlock Text="Planta (norte arriba)" Style="{StaticResource Subtitulo}"/>
+                    </DockPanel>
+                    <Border Background="{StaticResource Fondo}" CornerRadius="4" Height="250" ClipToBounds="True">
+                        <Grid>
+                            <ItemsControl ItemsSource="{Binding Tramos}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <Canvas/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Polyline Points="{Binding Puntos}" Stroke="{Binding Color}" StrokeThickness="3" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <ItemsControl ItemsSource="{Binding Marcas}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <Canvas/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Canvas>
+                                            <Line X1="{Binding X1}" Y1="{Binding Y1}" X2="{Binding X2}" Y2="{Binding Y2}" Stroke="{StaticResource Primario}" StrokeThickness="1.5"/>
+                                            <TextBlock Text="{Binding Texto}" Canvas.Left="{Binding TextoX}" Canvas.Top="{Binding TextoY}" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource Primario}"/>
+                                        </Canvas>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </Grid>
+                    </Border>
+
+                    <TextBlock Text="Perfil (escala vertical exagerada)" Style="{StaticResource Subtitulo}" Margin="0,10,0,4"/>
+                    <Border Background="{StaticResource Fondo}" CornerRadius="4" Height="100" ClipToBounds="True">
+                        <Canvas>
+                            <Polyline Points="{Binding Perfil}" Stroke="{StaticResource PrimarioClaro}" StrokeThickness="2" StrokeLineJoin="Round"/>
+                        </Canvas>
+                    </Border>
+
+                    <TextBlock Text="{Binding Resumen}" Margin="0,10,0,0" TextWrapping="Wrap" LineHeight="20"/>
+                </StackPanel>
+            </GroupBox>
+        </Grid>
+    </DockPanel>
+</Window>

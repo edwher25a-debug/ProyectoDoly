@@ -9,7 +9,8 @@ using ProyectoDoly.Views;
 namespace ProyectoDoly.Commands
 {
     /// <summary>
-    ///     Crea un eje escribiendo sus PI, radios y clotoides (como el editor de ejes de SOFiSTiK), para proyectos sin LandXML
+    ///     Crea o edita un eje elemento por elemento (como el cuadro Axis Data de SOFiSTiK), para proyectos sin LandXML.
+    ///     Con un eje seleccionado, lo abre para editarlo.
     /// </summary>
     [Transaction(TransactionMode.Manual)]
     public class EjePorTablaCmd : IExternalCommand
@@ -26,18 +27,40 @@ namespace ProyectoDoly.Commands
                 return Result.Cancelled;
             }
 
-            string paso = "abrir la ventana del eje";
+            string paso = "leer los ejes del modelo";
             try
             {
-                List<string> existentes = DatosEje.Ejes(doc).Select(e => e.Eje.Nombre).ToList();
-                vm_EjeDesdeLineas viewModel = new vm_EjeDesdeLineas(existentes);
-                v_EjeDesdeLineas view = new v_EjeDesdeLineas { DataContext = viewModel };
+                List<EjeGuardado> ejes = DatosEje.Ejes(doc);
+                ICollection<ElementId> seleccion = uidoc.Selection.GetElementIds();
+                EjeGuardado? editar = ejes.FirstOrDefault(e => seleccion.Contains(e.Id));
+
+                paso = "abrir la ventana del eje";
+                vm_EditorEje viewModel = new vm_EditorEje(ejes, editar);
+                v_EditorEje view = new v_EditorEje { DataContext = viewModel };
                 viewModel.Cerrar = aceptado => view.DialogResult = aceptado;
                 if (view.ShowDialog() != true || viewModel.Resultado == null) return Result.Cancelled;
 
                 paso = "dibujar el eje";
-                viewModel.Resultado.MarcasCada = viewModel.MarcasCadaValor;
-                ResultadoEje resultado = CreadorEje.CrearDibujado(doc, viewModel.Resultado, viewModel.Descripcion, "Creado desde una tabla de PI, en coordenadas compartidas");
+                ResultadoEje resultado;
+                if (editar != null)
+                    resultado = CreadorEje.Reemplazar(doc, editar, viewModel.Resultado, viewModel.Descripcion);
+                else
+                {
+                    Transform transformacion = viewModel.Sistema switch
+                    {
+                        SistemaEje.Compartidas => CreadorEje.InternaACompartida(doc).Inverse,
+                        SistemaEje.Interno => Transform.Identity,
+                        _ => CreadorEje.ProyectoAInterna(doc)
+                    };
+                    string sistema = viewModel.Sistema switch
+                    {
+                        SistemaEje.Compartidas => "coordenadas compartidas",
+                        SistemaEje.Interno => "origen interno",
+                        _ => "coordenadas de proyecto (punto base)"
+                    };
+                    resultado = CreadorEje.CrearDibujado(doc, viewModel.Resultado, transformacion, viewModel.Descripcion, $"Creado por tabla, en {sistema}");
+                }
+
                 uidoc.Selection.SetElementIds(new List<ElementId> { resultado.Id });
                 TaskDialog.Show(Titulo, resultado.Resumen);
                 return Result.Succeeded;
