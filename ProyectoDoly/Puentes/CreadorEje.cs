@@ -75,7 +75,7 @@ namespace ProyectoDoly.Puentes
         ///     Crea un eje dibujado en el modelo (rectas y arcos de Revit o de un DWG), ya en coordenadas compartidas
         /// </summary>
         public static ResultadoEje CrearDibujado(Document doc, Eje eje, string descripcion, string origen) =>
-            Crear(doc, eje, InternaACompartida(doc).Inverse, null, descripcion, $"Eje desde líneas {eje.Nombre}", origen);
+            Crear(doc, eje, InternaACompartida(doc).Inverse, Ubicacion.Compartidas, descripcion, $"Eje {eje.Nombre}", origen);
 
         //Lleva puntos del modelo (pies, origen interno) a coordenadas compartidas (pies), como "Colocar por coordenadas"
         public static Transform InternaACompartida(Document doc)

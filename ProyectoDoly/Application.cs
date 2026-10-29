@@ -78,6 +78,18 @@ namespace ProyectoDoly
 
             panelPuentes.AddItem(ejeDesdeLineas);
 
+            var ejePorTabla = new PushButtonData(nameof(EjePorTablaCmd), "Eje por\ntabla",
+                Assembly.GetExecutingAssembly().Location, typeof(EjePorTablaCmd).FullName)
+            {
+                ToolTip = "Crea el eje escribiendo sus puntos de inflexión con radios y clotoides, cuando no hay LandXML.",
+                LongDescription = "Un PI por línea (X; Y; radio; clotoide), en coordenadas compartidas; se puede pegar desde Excel. " +
+                                  "La rasante se da con cota inicial y pendiente o con una tabla de PIV.",
+                LargeImage = new BitmapImage(new Uri("pack://application:,,,/ProyectoDoly;component/Resources/Icons/EjePorTabla32.png")),
+                Image = new BitmapImage(new Uri("pack://application:,,,/ProyectoDoly;component/Resources/Icons/EjePorTabla16.png"))
+            };
+
+            panelPuentes.AddItem(ejePorTabla);
+
             var placements = new PushButtonData(nameof(PlacementsCmd), "Place-\nments",
                 Assembly.GetExecutingAssembly().Location, typeof(PlacementsCmd).FullName)
             {

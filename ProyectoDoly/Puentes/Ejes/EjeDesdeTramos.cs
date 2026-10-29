@@ -173,7 +173,7 @@ namespace ProyectoDoly.Puentes.Ejes
             return new ElementoHorizontal(TipoElemento.Arco, tramo.Inicio, rumbo, radio * barrido, signo / radio, signo / radio);
         }
 
-        private static PerfilVertical Rasante(OpcionesEjeDesdeTramos opciones, AlineamientoHorizontal horizontal)
+        public static PerfilVertical Rasante(OpcionesEjeDesdeTramos opciones, AlineamientoHorizontal horizontal)
         {
             if (opciones.Piv.Count >= 2) return new PerfilVertical("Rasante", opciones.Piv);
             if (opciones.Piv.Count == 1) throw new ArgumentException("La tabla de rasante necesita al menos dos PIV (o déjela vacía y use cota y pendiente).");

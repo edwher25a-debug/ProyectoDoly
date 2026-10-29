@@ -28,6 +28,14 @@ o en un DWG vinculado o importado (las polilíneas se toman por tramos rectos).
 - La vista previa avisa de los quiebres (uniones no tangentes) con su estación y ángulo.
 - Splines y elipses no se admiten: hay que convertirlas en arcos. Cálculo en `Puentes/Ejes/EjeDesdeTramos.cs`.
 
+## Eje por tabla
+
+Botón **Eje por tabla** (como el editor de ejes de SOFiSTiK): se escribe un PI por línea, `X; Y; radio; clotoide`, en metros
+y coordenadas compartidas, o se pegan las columnas desde Excel. El primero y el último PI son el inicio y el fin. En cada
+PI intermedio va una curva circular de ese radio con clotoides simétricas de ese largo (recta, clotoide, arco, clotoide,
+recta); sin radio el PI es un vértice. Si una curva no cabe entre sus vecinas, o las clotoides giran más que el vértice,
+se dice en qué PI. La rasante y el dibujo son los mismos que en *Eje desde líneas*. Cálculo en `Puentes/Ejes/EjePorTabla.cs`.
+
 ## Placements
 
 Botón **Placements**: puntos con nombre a lo largo del eje (como "Add Placements" de SOFiSTiK), con ID, estación y giro
